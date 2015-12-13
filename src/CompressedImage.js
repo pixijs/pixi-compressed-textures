@@ -1,4 +1,4 @@
-function CompressedImage (src, data, type, width, height, levels, internalFormat) {
+function CompressedImage(src, data, type, width, height, levels, internalFormat) {
     this.src = src;
     this.width = width;
     this.height = height;
@@ -9,14 +9,13 @@ function CompressedImage (src, data, type, width, height, levels, internalFormat
     this.complete = true;
     this.isCompressedImage = true;
 
-    this.dispose = function(){
+    this.dispose = function () {
         this.data = null;
     };
 
-    this.generateWebGLTexture = function(gl, preserveSource){
-        if(this.data == null)
-        {
-            throw "Trying to create a second (or more) webgl texture from the same CompressedImage : "+this.src;
+    this.generateWebGLTexture = function (gl, preserveSource) {
+        if (this.data == null) {
+            throw "Trying to create a second (or more) webgl texture from the same CompressedImage : " + this.src;
             return;
         }
 
@@ -24,8 +23,7 @@ function CompressedImage (src, data, type, width, height, levels, internalFormat
         var height = this.height;
         var offset = 0;
         // Loop through each mip level of compressed texture data provided and upload it to the given texture.
-        for (var i = 0; i < this.levels; ++i)
-        {
+        for (var i = 0; i < this.levels; ++i) {
             // Determine how big this level of compressed texture data is in bytes.
             var levelSize = textureLevelSize(this.internalFormat, width, height);
             // Get a view of the bytes for this level of DXT data.
@@ -34,10 +32,10 @@ function CompressedImage (src, data, type, width, height, levels, internalFormat
             gl.compressedTexImage2D(gl.TEXTURE_2D, i, this.internalFormat, width, height, 0, dxtLevel);
             // The next mip level will be half the height and width of this one.
             width = width >> 1;
-            if(width<1)
+            if (width < 1)
                 width = 1;
             height = height >> 1;
-            if(height<1)
+            if (height < 1)
                 height = 1;
             // Advance the offset into the compressed texture data past the current mip level's data.
             offset += levelSize;
@@ -45,19 +43,17 @@ function CompressedImage (src, data, type, width, height, levels, internalFormat
 
         // We can't use gl.generateMipmaps with compressed textures, so only use
         // mipmapped filtering if the compressed texture data contained mip levels.
-        if (levels > 1)
-        {
+        if (levels > 1) {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
         }
-        else
-        {
+        else {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         }
 
         // Cleaning the data to save memory. NOTE : BECAUSE OF THIS WE CANNOT CREATE TWO GL TEXTURE FROM THE SAME COMPRESSED IMAGE !
-        if(!preserveSource)
+        if (!preserveSource)
             this.data = null;
     };
 };
@@ -68,15 +64,15 @@ module.exports = CompressedImage;
  * @param arrayBuffer : le buffer à partir duquel charger l'image
  * @return la CompressedImage chargée
  */
-CompressedImage.loadFromArrayBuffer = function(arrayBuffer, src){
+CompressedImage.loadFromArrayBuffer = function (arrayBuffer, src) {
     var entete = new Uint8Array(arrayBuffer, 0, 3);
 
-    if(entete[0]=="DDS".charCodeAt(0) && entete[1]=="DDS".charCodeAt(1) && entete[2]=="DDS".charCodeAt(2))
+    if (entete[0] == "DDS".charCodeAt(0) && entete[1] == "DDS".charCodeAt(1) && entete[2] == "DDS".charCodeAt(2))
         return loadDDS(arrayBuffer, src);
-    else if(entete[0]=="PVR".charCodeAt(0) && entete[1]=="PVR".charCodeAt(1) && entete[2]=="PVR".charCodeAt(2))
+    else if (entete[0] == "PVR".charCodeAt(0) && entete[1] == "PVR".charCodeAt(1) && entete[2] == "PVR".charCodeAt(2))
         return loadPVR(arrayBuffer, src);
     else
-        throw "Compressed texture format is not recognized: "+src;
+        throw "Compressed texture format is not recognized: " + src;
 };
 
 /**
@@ -84,21 +80,21 @@ CompressedImage.loadFromArrayBuffer = function(arrayBuffer, src){
  * @param arrayBuffer : le buffer Г  partir duquel charger l'image
  * @return la CompressedImage chargГ©e
  */
-function loadDDS(arrayBuffer, src){
+function loadDDS(arrayBuffer, src) {
     // Get a view of the arrayBuffer that represents the DDS header.
     var header = new Int32Array(arrayBuffer, 0, DDS_HEADER_LENGTH);
 
     // Do some sanity checks to make sure this is a valid DDS file.
-    if(header[DDS_HEADER_MAGIC] != DDS_MAGIC)
+    if (header[DDS_HEADER_MAGIC] != DDS_MAGIC)
         throw "Invalid magic number in DDS header";
 
-    if(!header[DDS_HEADER_PF_FLAGS] & DDPF_FOURCC)
+    if (!header[DDS_HEADER_PF_FLAGS] & DDPF_FOURCC)
         throw "Unsupported format, must contain a FourCC code";
 
     // Determine what type of compressed data the file contains.
     var fourCC = header[DDS_HEADER_PF_FOURCC];
     var internalFormat;
-    switch(fourCC) {
+    switch (fourCC) {
         case FOURCC_DXT1:
             internalFormat = COMPRESSED_RGB_S3TC_DXT1_EXT;
             break;
@@ -123,7 +119,7 @@ function loadDDS(arrayBuffer, src){
 
     // Determine how many mipmap levels the file contains.
     var levels = 1;
-    if(header[DDS_HEADER_FLAGS] & DDSD_MIPMAPCOUNT) {
+    if (header[DDS_HEADER_FLAGS] & DDSD_MIPMAPCOUNT) {
         levels = Math.max(1, header[DDS_HEADER_MIPMAPCOUNT]);
     }
 
@@ -141,18 +137,18 @@ function loadDDS(arrayBuffer, src){
  * @param arrayBuffer : le buffer Г  partir duquel charger l'image
  * @return la CompressedImage chargГ©e
  */
-function loadPVR(arrayBuffer, src){
+function loadPVR(arrayBuffer, src) {
     // Get a view of the arrayBuffer that represents the DDS header.
     var header = new Int32Array(arrayBuffer, 0, PVR_HEADER_LENGTH);
 
     // Do some sanity checks to make sure this is a valid DDS file.
-    if(header[PVR_HEADER_MAGIC] != PVR_MAGIC)
+    if (header[PVR_HEADER_MAGIC] != PVR_MAGIC)
         throw "Invalid magic number in PVR header";
 
     // Determine what type of compressed data the file contains.
     var format = header[PVR_HEADER_FORMAT];
     var internalFormat;
-    switch(format) {
+    switch (format) {
         case PVR_FORMAT_2BPP_RGB:
             internalFormat = COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
             break;
@@ -244,15 +240,15 @@ function textureLevelSize(format, width, height) {
 
 // DXT formats, from:
 // http://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_s3tc/
-var COMPRESSED_RGB_S3TC_DXT1_EXT  = 0x83F0;
+var COMPRESSED_RGB_S3TC_DXT1_EXT = 0x83F0;
 var COMPRESSED_RGBA_S3TC_DXT1_EXT = 0x83F1;
 var COMPRESSED_RGBA_S3TC_DXT3_EXT = 0x83F2;
 var COMPRESSED_RGBA_S3TC_DXT5_EXT = 0x83F3;
 
 // ATC formats, from:
 // http://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_atc/
-var COMPRESSED_RGB_ATC_WEBGL                     = 0x8C92;
-var COMPRESSED_RGBA_ATC_EXPLICIT_ALPHA_WEBGL     = 0x8C93;
+var COMPRESSED_RGB_ATC_WEBGL = 0x8C92;
+var COMPRESSED_RGBA_ATC_EXPLICIT_ALPHA_WEBGL = 0x8C93;
 var COMPRESSED_RGBA_ATC_INTERPOLATED_ALPHA_WEBGL = 0x87EE;
 
 // DXT values and structures referenced from:
@@ -291,8 +287,8 @@ var FOURCC_ATCI = fourCCToInt32("ATCI");
 
 // PVR formats, from:
 // http://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_pvrtc/
-var COMPRESSED_RGB_PVRTC_4BPPV1_IMG  = 0x8C00;
-var COMPRESSED_RGB_PVRTC_2BPPV1_IMG  = 0x8C01;
+var COMPRESSED_RGB_PVRTC_4BPPV1_IMG = 0x8C00;
+var COMPRESSED_RGB_PVRTC_2BPPV1_IMG = 0x8C01;
 var COMPRESSED_RGBA_PVRTC_4BPPV1_IMG = 0x8C02;
 var COMPRESSED_RGBA_PVRTC_2BPPV1_IMG = 0x8C03;
 
@@ -300,14 +296,14 @@ var COMPRESSED_RGBA_PVRTC_2BPPV1_IMG = 0x8C03;
 // http://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_etc1/
 var COMPRESSED_RGB_ETC1_WEBGL = 0x8D64;
 
-var PVR_FORMAT_2BPP_RGB  = 0;
+var PVR_FORMAT_2BPP_RGB = 0;
 var PVR_FORMAT_2BPP_RGBA = 1;
-var PVR_FORMAT_4BPP_RGB  = 2;
+var PVR_FORMAT_4BPP_RGB = 2;
 var PVR_FORMAT_4BPP_RGBA = 3;
-var PVR_FORMAT_ETC1      = 6;
-var PVR_FORMAT_DXT1      = 7;
-var PVR_FORMAT_DXT3      = 9;
-var PVR_FORMAT_DXT5      = 5;
+var PVR_FORMAT_ETC1 = 6;
+var PVR_FORMAT_DXT1 = 7;
+var PVR_FORMAT_DXT3 = 9;
+var PVR_FORMAT_DXT5 = 5;
 
 var PVR_HEADER_LENGTH = 13; // The header length in 32 bit ints.
 var PVR_MAGIC = 0x03525650; //0x50565203;

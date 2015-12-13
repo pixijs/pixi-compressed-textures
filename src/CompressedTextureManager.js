@@ -11,26 +11,27 @@ var core = PIXI,
  * @extends PIXI.WebGlManager
  * @param renderer {PIXI.WebGLRenderer} The renderer this manager works for.
  */
-function CompressedTextureManager(renderer)
-{
+function CompressedTextureManager(renderer) {
     WebGLManager.call(this, renderer);
 }
 
-CompressedTextureManager.prototype.getSupportedExtensions = function() {
+CompressedTextureManager.prototype.getSupportedExtensions = function () {
     function getExtension(gl, name) {
         var vendorPrefixes = ["", "WEBKIT_", "MOZ_"];
         var ext = null;
         for (var i in vendorPrefixes) {
             ext = gl.getExtension(vendorPrefixes[i] + name);
-            if (ext) { break; }
+            if (ext) {
+                break;
+            }
         }
         return ext;
     }
 
     return {
-        dxt : getExtension(gl, "WEBGL_compressed_texture_s3tc"),
-        pvrtc : getExtension(gl, "WEBGL_compressed_texture_pvrtc"),
-        atc : getExtension(gl, "WEBGL_compressed_texture_atc")
+        dxt: getExtension(gl, "WEBGL_compressed_texture_s3tc"),
+        pvrtc: getExtension(gl, "WEBGL_compressed_texture_pvrtc"),
+        atc: getExtension(gl, "WEBGL_compressed_texture_atc")
     }
 };
 
@@ -40,15 +41,14 @@ module.exports = CompressedTextureManager;
 
 core.ShaderManager.registerPlugin('compressedTextureManager', CompressedTextureManager);
 
-CompressedTextureManager.prototype.updateTexture = function(texture, removeSource) {
+CompressedTextureManager.prototype.updateTexture = function (texture, removeSource) {
     var renderer = this.renderer;
     var gl = this.renderer.gl;
     var source = texture.source;
     if (!(source instanceof CompressedImage)) {
         throw "Not a compressed image";
     }
-    if (!texture._glTextures[gl.id])
-    {
+    if (!texture._glTextures[gl.id]) {
         texture._glTextures[gl.id] = gl.createTexture();
         texture.on('dispose', renderer.destroyTexture, renderer);
     }
@@ -57,7 +57,7 @@ CompressedTextureManager.prototype.updateTexture = function(texture, removeSourc
     source.generateWebGLTexture(gl, !removeSource);
 };
 
-CompressedTextureManager.prototype.updateAllCompressedTextures = function(resources, removeSource) {
+CompressedTextureManager.prototype.updateAllCompressedTextures = function (resources, removeSource) {
     for (var key in resources) {
         var resource = resources[key];
         if (resource.isCompressedImage) {
@@ -66,7 +66,7 @@ CompressedTextureManager.prototype.updateAllCompressedTextures = function(resour
     }
 };
 
-CompressedTextureManager.prototype.updateAllTextures = function(resources, removeSource) {
+CompressedTextureManager.prototype.updateAllTextures = function (resources, removeSource) {
     for (var key in resources) {
         var resource = resources[key];
         if (resource.isCompressedImage) {

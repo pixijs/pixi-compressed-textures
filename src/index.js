@@ -3,7 +3,7 @@ var compressedTextures = {
     compressedImageParser: require('./compressedImageParser.js'),
     extensionChooser: require('./extensionChooser.js'),
     extensionFixer: require('./extensionFixer.js'),
-    detectExtensions: function(renderer) {
+    detectExtensions: function (renderer) {
         if (renderer instanceof PIXI.WebGLRenderer) {
             var data = renderer.plugins['compressedTextureManager'].getSupportedExtensions();
             if (data.dxt) extensions.push('.dxt');
@@ -13,10 +13,10 @@ var compressedTextures = {
             //nothing special for canvas
         }
         //retina!
-        if (renderer.resolution == 2 ) {
+        if (renderer.resolution == 2) {
             var ext = extensions.slice(0);
-            while (ext.length>0) {
-                extensions.push("@2x"+ext.pop());
+            while (ext.length > 0) {
+                extensions.push("@2x" + ext.pop());
             }
             extensions.push("@2x.png");
             extensions.push("@2x.jpg");
