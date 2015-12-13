@@ -3,29 +3,34 @@ Compressed textures and retina support for pixi v3. Loader can choose textures d
 
 ## Usage
 
-### How to load texture format depending on browser
+### How to load texture with format depending on platform
 
 If you are just including the built files, library will adds itself to a pixi namespace:
 
 ```js
 var renderer = PIXI.autoDetectRenderer({ width: 800, height: 600, resolution: 2 });
-// textureParser will form list of allowed extensions based on renderer.
-var textureParser = PIXI.compressedTextures.textureParser(renderer);
 var loader = new PIXI.loaders.Loader();
-loader.use(textureParser);
+// textureParser will form list of allowed extensions based on renderer.
+loader.use( PIXI.compressedTextures.textureParser(renderer) );
 // use @2x texture if resolution is 2, use dds format if its windows
-var textureOptions1 = { ext: ["@2x.dds", "@2x.png", ".dds", ".png"] };
+var textureOptions1 = { extra: {choice: ["@2x.png", ".dds", "@2x.dds"]} };
 // use dds format if its windows but dont care for retina
-var textureOptions2 = { ext: [".dds", ".png"] };
+var textureOptions2 = { extra: {choice: [".dds"]} };
+// while loading atlas pass this thing to image
+var atlasOptions = { extra: { imageExtra: { choice: [".dds"]} } };
 
 var stage = new PIXI.Container();
 
-loader.add('building1', 'img/building', textureOptions1)
-    .add('building2', 'img/building', textureOptions2)
+loader.add('building1', 'img/building.png', textureOptions1)
+    .add('building2', 'img/building.png', textureOptions2)
     .add('building3', 'img/building.png')
+    .add('atlas1', 'img/atlas.json', atlasOptions )
     .load(function(loader, resources) {
-        //if you want to preload all textures into videomemory. Its good if your textures are 2048x2048.
-        textureParser.updateAllTextures(renderer);
+        // You have to preload all compressed textures into videomemory, pixi renderer cant do that for you.
+        // You also can specify different renderer or set in that function
+        // and this thing doesnt work for canvas
+        if (renderer.type == PIXI.RENDERER_TYPE.WEBGL)
+            renderer.textureManager.updateAllTextures(resources, true);
 
         var spr = new Sprite(resources.building1.texture);
         var spr2 = new Sprite(resources.building2.texture);
@@ -49,7 +54,9 @@ var PIXI = require('pixi.js'),
     TEX = require('pixi-compressed-textures');
 
 var renderer = PIXI.autoDetectRenderer(800, 600);
-var textureParser = TEX.textureParser(renderer);
+var loader = new PIXI.loaders.Loader();
+// textureParser will form list of allowed extensions based on renderer.
+loader.use( PIXI.compressedTextures.textureParser(renderer) );
 ```
 
 ## Building
