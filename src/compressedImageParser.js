@@ -1,6 +1,10 @@
 var core = PIXI,
     utils = core.utils,
-    CompressedImage = require('./CompressedImage');
+    CompressedImage = require('./CompressedImage'),
+    Resource = core.loaders.Resource;
+
+Resource._xhrTypeMap['dds'] = Resource.XHR_RESPONSE_TYPE.BUFFER;
+Resource._xhrTypeMap['pvr'] = Resource.XHR_RESPONSE_TYPE.BUFFER;
 
 function compressedTextureParser(supportedExtensions) {
     supportedExtensions = supportedExtensions || [];
@@ -9,7 +13,8 @@ function compressedTextureParser(supportedExtensions) {
         resource.isCompressedImage = false;
         if (resource.xhr && resource.xhrType === Resource.XHR_RESPONSE_TYPE.BUFFER) {
             if (resource.url.indexOf('.dds') != -1 || resource.url.indexOf('.pvr') != -1) {
-                var baseTexture = new core.BaseTexture(resource.data, null, core.utils.getResolutionOfUrl(resource.url));
+                var compressedImage = CompressedImage.loadFromArrayBuffer(resource.data);
+                var baseTexture = new core.BaseTexture(compressedImage, null, core.utils.getResolutionOfUrl(resource.url));
                 baseTexture.imageUrl = resource.url;
 
                 resource.texture = new PIXI.Texture(baseTexture);

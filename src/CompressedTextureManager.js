@@ -15,7 +15,14 @@ function CompressedTextureManager(renderer) {
     WebGLManager.call(this, renderer);
 }
 
+CompressedTextureManager.prototype = Object.create(WebGLManager.prototype);
+CompressedTextureManager.prototype.constructor = CompressedTextureManager;
+module.exports = CompressedTextureManager;
+
+core.WebGLRenderer.registerPlugin('compressedTextureManager', CompressedTextureManager);
+
 CompressedTextureManager.prototype.getSupportedExtensions = function () {
+    var gl = this.renderer.gl;
     function getExtension(gl, name) {
         var vendorPrefixes = ["", "WEBKIT_", "MOZ_"];
         var ext = null;
@@ -34,12 +41,6 @@ CompressedTextureManager.prototype.getSupportedExtensions = function () {
         atc: getExtension(gl, "WEBGL_compressed_texture_atc")
     }
 };
-
-CompressedTextureManager.prototype = Object.create(WebGLManager.prototype);
-CompressedTextureManager.prototype.constructor = CompressedTextureManager;
-module.exports = CompressedTextureManager;
-
-core.ShaderManager.registerPlugin('compressedTextureManager', CompressedTextureManager);
 
 CompressedTextureManager.prototype.updateTexture = function (texture, removeSource) {
     var renderer = this.renderer;
@@ -70,9 +71,9 @@ CompressedTextureManager.prototype.updateAllTextures = function (resources, remo
     for (var key in resources) {
         var resource = resources[key];
         if (resource.isCompressedImage) {
-            this.updateTexture(resource.texture);
+            this.updateTexture(resource.texture.baseTexture, removeSource);
         } else if (resource.isImage) {
-            renderer.updateTexture(resource.texture);
+            this.renderer.updateTexture(resource.texture.baseTexture);
         }
     }
 };

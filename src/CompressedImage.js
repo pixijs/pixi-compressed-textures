@@ -27,7 +27,7 @@ function CompressedImage(src, data, type, width, height, levels, internalFormat)
             // Determine how big this level of compressed texture data is in bytes.
             var levelSize = textureLevelSize(this.internalFormat, width, height);
             // Get a view of the bytes for this level of DXT data.
-            var dxtLevel = new Uint8Array(this.data.buffer, this.ta.byteOffset + offset, levelSize);
+            var dxtLevel = new Uint8Array(this.data.buffer, this.data.byteOffset + offset, levelSize);
             // Upload!
             gl.compressedTexImage2D(gl.TEXTURE_2D, i, this.internalFormat, width, height, 0, dxtLevel);
             // The next mip level will be half the height and width of this one.

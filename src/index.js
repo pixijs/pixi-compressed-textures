@@ -4,23 +4,26 @@ var compressedTextures = {
     extensionChooser: require('./extensionChooser.js'),
     extensionFixer: require('./extensionFixer.js'),
     detectExtensions: function (renderer) {
+        var extensions = [];
         if (renderer instanceof PIXI.WebGLRenderer) {
-            var data = renderer.plugins['compressedTextureManager'].getSupportedExtensions();
-            if (data.dxt) extensions.push('.dxt');
+            var data = renderer.plugins.compressedTextureManager.getSupportedExtensions();
+            if (data.dxt) extensions.push('.dds');
             if (data.pvrtc) extensions.push('.pvr');
             if (data.atc) extensions.push('.atc');
         } else if (renderer instanceof PIXI.CanvasRenderer) {
             //nothing special for canvas
         }
-        //retina!
-        if (renderer.resolution == 2) {
-            var ext = extensions.slice(0);
-            while (ext.length > 0) {
-                extensions.push("@2x" + ext.pop());
-            }
-            extensions.push("@2x.png");
-            extensions.push("@2x.jpg");
+        //retina or not
+        var res = "@"+renderer.resolution+"x";
+        var ext = extensions.slice(0);
+        while (ext.length > 0) {
+            extensions.push(res + ext.pop());
         }
+        extensions.push(res + ".png");
+        extensions.push(res + ".jpg");
+        //atlas support @1x @2x
+        extensions.push(res + ".json");
+        return extensions;
     }
 };
 
