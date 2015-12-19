@@ -443,8 +443,8 @@ var core = PIXI,
     CompressedImage = require('./CompressedImage'),
     Resource = core.loaders.Resource;
 
-Resource._xhrTypeMap['dds'] = Resource.XHR_RESPONSE_TYPE.BUFFER;
-Resource._xhrTypeMap['pvr'] = Resource.XHR_RESPONSE_TYPE.BUFFER;
+Resource.setExtensionXhrType('dds', Resource.XHR_RESPONSE_TYPE.BUFFER);
+Resource.setExtensionXhrType('pvr', Resource.XHR_RESPONSE_TYPE.BUFFER);
 
 function compressedTextureParser(supportedExtensions) {
     supportedExtensions = supportedExtensions || [];
