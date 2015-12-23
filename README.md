@@ -3,7 +3,7 @@ Compressed textures and retina support for pixi v3. Loader can choose textures d
 
 ## Usage
 
-This [example](ivanpopelyshev.github.io/examples/index.html?s=textures&f=dds.js&title=DirectDrawSurface%20(DDS)&plugins=pixi-compressed-textures)
+This [example](https://ivanpopelyshev.github.io/examples/index.html?s=textures&f=dds.js&title=DirectDrawSurface%20(DDS)&plugins=pixi-compressed-textures)
 shows how to handle multiple resolutions and multiple image formats for single images and for atlases.
 
 ```js
