@@ -50,7 +50,7 @@ CompressedTextureManager.prototype.updateTexture = function (texture, removeSour
     var renderer = this.renderer;
     var gl = this.renderer.gl;
     if (!source.complete) {
-        throw "CompressedImage wasnt loaded yet. Check if you have `loader.before(PIXI.compressedTextures.imageParser())` thing";
+        throw "Trying to update compressed texture that isnt loaded yet.";
     }
     if (!texture._glTextures[gl.id]) {
         texture._glTextures[gl.id] = gl.createTexture();

@@ -1,6 +1,6 @@
 {
   "name": "pixi-compressed-textures",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Compressed textures and retina support for pixijs.",
   "author": "Ivan Popelyshev",
   "contributors": [
