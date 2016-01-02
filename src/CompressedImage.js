@@ -1,4 +1,10 @@
 function CompressedImage(src, data, type, width, height, levels, internalFormat) {
+    CompressedImage.prototype.init.apply(this, arguments);
+};
+
+module.exports = CompressedImage;
+
+CompressedImage.prototype.init = function(src, data, type, width, height, levels, internalFormat) {
     this.src = src;
     this.width = width;
     this.height = height;
@@ -6,81 +12,94 @@ function CompressedImage(src, data, type, width, height, levels, internalFormat)
     this.type = type;
     this.levels = levels;
     this.internalFormat = internalFormat;
-    this.complete = true;
     this.isCompressedImage = true;
 
-    this.dispose = function () {
-        this.data = null;
-    };
-
-    this.generateWebGLTexture = function (gl, preserveSource) {
-        if (this.data == null) {
-            throw "Trying to create a second (or more) webgl texture from the same CompressedImage : " + this.src;
-            return;
-        }
-
-        var width = this.width;
-        var height = this.height;
-        var offset = 0;
-        // Loop through each mip level of compressed texture data provided and upload it to the given texture.
-        for (var i = 0; i < this.levels; ++i) {
-            // Determine how big this level of compressed texture data is in bytes.
-            var levelSize = textureLevelSize(this.internalFormat, width, height);
-            // Get a view of the bytes for this level of DXT data.
-            var dxtLevel = new Uint8Array(this.data.buffer, this.data.byteOffset + offset, levelSize);
-            // Upload!
-            gl.compressedTexImage2D(gl.TEXTURE_2D, i, this.internalFormat, width, height, 0, dxtLevel);
-            // The next mip level will be half the height and width of this one.
-            width = width >> 1;
-            if (width < 1)
-                width = 1;
-            height = height >> 1;
-            if (height < 1)
-                height = 1;
-            // Advance the offset into the compressed texture data past the current mip level's data.
-            offset += levelSize;
-        }
-
-        // We can't use gl.generateMipmaps with compressed textures, so only use
-        // mipmapped filtering if the compressed texture data contained mip levels.
-        if (levels > 1) {
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
-        }
-        else {
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-        }
-
-        // Cleaning the data to save memory. NOTE : BECAUSE OF THIS WE CANNOT CREATE TWO GL TEXTURE FROM THE SAME COMPRESSED IMAGE !
-        if (!preserveSource)
-            this.data = null;
-    };
+    var oldComplete = this.complete;
+    this.complete = !!data;
+    if (!oldComplete && this.complete && this.onload) {
+        this.onload( { target: this } );
+    }
+    return this;
 };
 
-module.exports = CompressedImage;
+CompressedImage.prototype.dispose = function() {
+    this.data = null;
+};
+
+CompressedImage.prototype.generateWebGLTexture = function (gl, preserveSource) {
+    if (this.data == null) {
+        throw "Trying to create a second (or more) webgl texture from the same CompressedImage : " + this.src;
+        return;
+    }
+
+    var width = this.width;
+    var height = this.height;
+    var levels = this.levels;
+    var offset = 0;
+    // Loop through each mip level of compressed texture data provided and upload it to the given texture.
+    for (var i = 0; i < this.levels; ++i) {
+        // Determine how big this level of compressed texture data is in bytes.
+        var levelSize = textureLevelSize(this.internalFormat, width, height);
+        // Get a view of the bytes for this level of DXT data.
+        var dxtLevel = new Uint8Array(this.data.buffer, this.data.byteOffset + offset, levelSize);
+        // Upload!
+        gl.compressedTexImage2D(gl.TEXTURE_2D, i, this.internalFormat, width, height, 0, dxtLevel);
+        // The next mip level will be half the height and width of this one.
+        width = width >> 1;
+        if (width < 1)
+            width = 1;
+        height = height >> 1;
+        if (height < 1)
+            height = 1;
+        // Advance the offset into the compressed texture data past the current mip level's data.
+        offset += levelSize;
+    }
+
+    // We can't use gl.generateMipmaps with compressed textures, so only use
+    // mipmapped filtering if the compressed texture data contained mip levels.
+    if (levels > 1) {
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+    }
+    else {
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    }
+
+    // Cleaning the data to save memory. NOTE : BECAUSE OF THIS WE CANNOT CREATE TWO GL TEXTURE FROM THE SAME COMPRESSED IMAGE !
+    if (!preserveSource)
+        this.data = null;
+};
+
 /**
  * Charge une image compressée depuis un array buffer
  * @param arrayBuffer : le buffer à partir duquel charger l'image
  * @return la CompressedImage chargée
  */
 CompressedImage.loadFromArrayBuffer = function (arrayBuffer, src) {
+    return new CompressedImage(src).loadFromArrayBuffer(arrayBuffer);
+};
+
+CompressedImage.prototype.loadFromArrayBuffer = function(arrayBuffer) {
     var entete = new Uint8Array(arrayBuffer, 0, 3);
 
+    //todo: implement onload
+
     if (entete[0] == "DDS".charCodeAt(0) && entete[1] == "DDS".charCodeAt(1) && entete[2] == "DDS".charCodeAt(2))
-        return loadDDS(arrayBuffer, src);
+        return this._loadDDS(arrayBuffer);
     else if (entete[0] == "PVR".charCodeAt(0) && entete[1] == "PVR".charCodeAt(1) && entete[2] == "PVR".charCodeAt(2))
-        return loadPVR(arrayBuffer, src);
+        return this._loadPVR(arrayBuffer);
     else
         throw "Compressed texture format is not recognized: " + src;
-};
+    return this;
+}
 
 /**
  * Charge une image compressГ©e au format DDS depuis un array buffer
  * @param arrayBuffer : le buffer Г  partir duquel charger l'image
  * @return la CompressedImage chargГ©e
  */
-function loadDDS(arrayBuffer, src) {
+CompressedImage.prototype._loadDDS = function(arrayBuffer) {
     // Get a view of the arrayBuffer that represents the DDS header.
     var header = new Int32Array(arrayBuffer, 0, DDS_HEADER_LENGTH);
 
@@ -129,7 +148,7 @@ function loadDDS(arrayBuffer, src) {
     var dataOffset = header[DDS_HEADER_SIZE] + 4;
     var dxtData = new Uint8Array(arrayBuffer, dataOffset);
 
-    return new CompressedImage(src, dxtData, 'DDS', width, height, levels, internalFormat);
+    return this.init(this.src, dxtData, 'DDS', width, height, levels, internalFormat);
 };
 
 /**
@@ -137,7 +156,7 @@ function loadDDS(arrayBuffer, src) {
  * @param arrayBuffer : le buffer Г  partir duquel charger l'image
  * @return la CompressedImage chargГ©e
  */
-function loadPVR(arrayBuffer, src) {
+CompressedImage.prototype._loadPVR = function(arrayBuffer) {
     // Get a view of the arrayBuffer that represents the DDS header.
     var header = new Int32Array(arrayBuffer, 0, PVR_HEADER_LENGTH);
 
@@ -184,7 +203,7 @@ function loadPVR(arrayBuffer, src) {
     var dataOffset = header[PVR_HEADER_METADATA] + 52;
     var pvrtcData = new Uint8Array(arrayBuffer, dataOffset);
 
-    return new CompressedImage(src, pvrtcData, 'PVR', width, height, levels, internalFormat);
+    return this.init(this.src, pvrtcData, 'PVR', width, height, levels, internalFormat);
 };
 
 

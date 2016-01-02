@@ -1,9 +1,9 @@
 var compressedTextures = {
     CompressedTextureManager: require('./CompressedTextureManager.js'),
-    compressedImageParser: require('./compressedImageParser.js'),
+    imageParser: require('./imageParser.js'),
     extensionChooser: require('./extensionChooser.js'),
     extensionFixer: require('./extensionFixer.js'),
-    detectExtensions: function (renderer) {
+    detectExtensions: function (renderer, resolution) {
         var extensions = [];
         if (renderer instanceof PIXI.WebGLRenderer) {
             var data = renderer.plugins.compressedTextureManager.getSupportedExtensions();
@@ -14,22 +14,22 @@ var compressedTextures = {
             //nothing special for canvas
         }
         //retina or not
-        var res = "@"+renderer.resolution+"x";
+        resolution = resolution || renderer.resolution;
+        var res = "@"+resolution+"x";
         var ext = extensions.slice(0);
         while (ext.length > 0) {
             extensions.push(res + ext.pop());
         }
         extensions.push(res + ".png");
         extensions.push(res + ".jpg");
-        //atlas support @1x @2x
+        //atlas support @1x @2x @.5x
         extensions.push(res + ".json");
+        extensions.push(res + ".atlas");
         return extensions;
     }
 };
 
-PIXI.loaders.Loader.addPixiMiddleware(compressedTextures.compressedImageParser);
 PIXI.loaders.Loader.addPixiMiddleware(compressedTextures.extensionFixer);
-PIXI.loader.use(compressedTextures.compressedImageParser());
 PIXI.loader.use(compressedTextures.extensionFixer());
 
 module.exports = global.PIXI.compressedTextures = compressedTextures;

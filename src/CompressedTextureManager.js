@@ -43,11 +43,14 @@ CompressedTextureManager.prototype.getSupportedExtensions = function () {
 };
 
 CompressedTextureManager.prototype.updateTexture = function (texture, removeSource) {
-    var renderer = this.renderer;
-    var gl = this.renderer.gl;
     var source = texture.source;
     if (!(source instanceof CompressedImage)) {
         throw "Not a compressed image";
+    }
+    var renderer = this.renderer;
+    var gl = this.renderer.gl;
+    if (!source.complete) {
+        throw "CompressedImage wasnt loaded yet. Check if you have `loader.before(PIXI.compressedTextures.imageParser())` thing";
     }
     if (!texture._glTextures[gl.id]) {
         texture._glTextures[gl.id] = gl.createTexture();

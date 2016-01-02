@@ -1,6 +1,8 @@
 function extensionChooser(supportedExtensions) {
     supportedExtensions = supportedExtensions || [];
 
+    var imageParser = require('./imageParser')();
+
     return function (resource, next) {
         var ext = resource.metadata.choice;
         if (!ext) {
@@ -24,11 +26,11 @@ function extensionChooser(supportedExtensions) {
                 if (ext[i] === supportedExtensions[j]) {
                     resource.url = url;
                     resource.loadType = resource._determineLoadType();
-                    return next();
+                    return imageParser(resource, next);
                 }
             }
         }
-        next();
+        return imageParser(resource, next);
     };
 }
 

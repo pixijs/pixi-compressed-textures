@@ -1,7 +1,22 @@
 # pixi-textures
 Compressed textures and retina support for pixi v3. Loader can choose textures depends on platform and rendering mode.
 
-## Usage
+## Minimum demo
+
+Pretty easy to hack parser into your loader.
+
+```js
+var loader = new PIXI.loaders.Loader();
+loader.before(PIXI.compressedTextures.imageParser());
+loader.add('building', 'building.dds');
+loader.load(function(loader, resources) {
+    var sprite = new PIXI.Sprite(resources['building'].texture);
+});
+```
+
+## Full example
+
+If your app has no detection of supported formats it is not ready for production.
 
 This [example](ivanpopelyshev.github.io/examples/index.html?s=textures&f=dds.js&title=DirectDrawSurface%20(DDS)&plugins=pixi-compressed-textures)
 shows how to handle multiple resolutions and multiple image formats for single images and for atlases.
@@ -12,9 +27,12 @@ renderer.view.style.width = "800px";
 renderer.view.style.height = "600px";
 document.body.appendChild(renderer.view);
 
+// this will form list of allowed extensions based on renderer.
+var extensions = PIXI.compressedTextures.detectExtensions(renderer);
+
 var loader = new PIXI.loaders.Loader();
-// textureParser will form list of allowed extensions based on renderer.
-loader.before(PIXI.compressedTextures.extensionChooser(PIXI.compressedTextures.detectExtensions(renderer)));
+// this middleware chooses appropriate file. It also has imageParser() inside
+loader.before(PIXI.compressedTextures.extensionChooser(extensions));
 // use @2x texture if resolution is 2, use dds format if its windows
 var textureOptions1 = { metadata: {choice: ["@2x.png", ".dds", "@2x.dds"]} };
 // use dds format if its windows but dont care for retina
