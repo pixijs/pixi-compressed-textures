@@ -1,6 +1,6 @@
 function CompressedImage(src, data, type, width, height, levels, internalFormat) {
     CompressedImage.prototype.init.apply(this, arguments);
-};
+}
 
 module.exports = CompressedImage;
 
@@ -27,9 +27,8 @@ CompressedImage.prototype.dispose = function() {
 };
 
 CompressedImage.prototype.generateWebGLTexture = function (gl, preserveSource) {
-    if (this.data == null) {
+    if (this.data === null) {
         throw "Trying to create a second (or more) webgl texture from the same CompressedImage : " + this.src;
-        return;
     }
 
     var width = this.width;
@@ -81,18 +80,18 @@ CompressedImage.loadFromArrayBuffer = function (arrayBuffer, src) {
 };
 
 CompressedImage.prototype.loadFromArrayBuffer = function(arrayBuffer) {
-    var entete = new Uint8Array(arrayBuffer, 0, 3);
+    var head = new Uint8Array(arrayBuffer, 0, 3);
 
     //todo: implement onload
 
-    if (entete[0] == "DDS".charCodeAt(0) && entete[1] == "DDS".charCodeAt(1) && entete[2] == "DDS".charCodeAt(2))
+    if (head[0] == "DDS".charCodeAt(0) && head[1] == "DDS".charCodeAt(1) && head[2] == "DDS".charCodeAt(2))
         return this._loadDDS(arrayBuffer);
-    else if (entete[0] == "PVR".charCodeAt(0) && entete[1] == "PVR".charCodeAt(1) && entete[2] == "PVR".charCodeAt(2))
+    else if (head[0] == "PVR".charCodeAt(0) && head[1] == "PVR".charCodeAt(1) && head[2] == "PVR".charCodeAt(2))
         return this._loadPVR(arrayBuffer);
     else
         throw "Compressed texture format is not recognized: " + src;
     return this;
-}
+};
 
 /**
  * Charge une image compressГ©e au format DDS depuis un array buffer

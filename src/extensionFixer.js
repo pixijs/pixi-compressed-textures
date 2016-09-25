@@ -14,7 +14,7 @@ function textureExtensionFixer(supportedExtensions) {
             core.utils.TextureCache[baseTexture.imageUrl] = texture;
         }
         next();
-    }
+    };
 }
 
 module.exports = textureExtensionFixer;

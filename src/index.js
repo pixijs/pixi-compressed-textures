@@ -1,8 +1,9 @@
-var compressedTextures = {
-    CompressedTextureManager: require('./CompressedTextureManager.js'),
-    imageParser: require('./imageParser.js'),
-    extensionChooser: require('./extensionChooser.js'),
-    extensionFixer: require('./extensionFixer.js'),
+var plugin = {
+    CompressedTextureManager: require('./CompressedTextureManager'),
+    imageParser: require('./imageParser'),
+    extensionChooser: require('./extensionChooser'),
+    extensionFixer: require('./extensionFixer'),
+    GLTextureMixin: require('./GLTextureMixin'),
     detectExtensions: function (renderer, resolution) {
         var extensions = [];
         if (renderer instanceof PIXI.WebGLRenderer) {
@@ -29,7 +30,9 @@ var compressedTextures = {
     }
 };
 
-PIXI.loaders.Loader.addPixiMiddleware(compressedTextures.extensionFixer);
-PIXI.loader.use(compressedTextures.extensionFixer());
+Object.assign(PIXI.glCore.GLTexture.prototype, plugin.GLTextureMixin);
 
-module.exports = global.PIXI.compressedTextures = compressedTextures;
+PIXI.loaders.Loader.addPixiMiddleware(plugin.extensionFixer);
+PIXI.loader.use(plugin.extensionFixer());
+
+module.exports = global.PIXI.compressedTextures = plugin;

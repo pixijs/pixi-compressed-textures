@@ -1,5 +1,5 @@
 # pixi-textures
-Compressed textures and retina support for pixi v3. Loader can choose textures depends on platform and rendering mode.
+Compressed textures and retina support for pixi v4. Loader can choose textures depends on platform and rendering mode.
 
 ## Minimum demo
 

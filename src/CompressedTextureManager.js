@@ -39,44 +39,5 @@ CompressedTextureManager.prototype.getSupportedExtensions = function () {
         dxt: getExtension(gl, "WEBGL_compressed_texture_s3tc"),
         pvrtc: getExtension(gl, "WEBGL_compressed_texture_pvrtc"),
         atc: getExtension(gl, "WEBGL_compressed_texture_atc")
-    }
-};
-
-CompressedTextureManager.prototype.updateTexture = function (texture, removeSource) {
-    var source = texture.source;
-    if (!(source instanceof CompressedImage)) {
-        throw "Not a compressed image";
-    }
-    var renderer = this.renderer;
-    var gl = this.renderer.gl;
-    if (!source.complete) {
-        throw "Trying to update compressed texture that isnt loaded yet.";
-    }
-    if (!texture._glTextures[gl.id]) {
-        texture._glTextures[gl.id] = gl.createTexture();
-        texture.on('dispose', renderer.destroyTexture, renderer);
-    }
-    gl.bindTexture(gl.TEXTURE_2D, texture._glTextures[gl.id]);
-    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, texture.premultipliedAlpha);
-    source.generateWebGLTexture(gl, !removeSource);
-};
-
-CompressedTextureManager.prototype.updateAllCompressedTextures = function (resources, removeSource) {
-    for (var key in resources) {
-        var resource = resources[key];
-        if (resource.isCompressedImage) {
-            this.updateTexture(resource.texture, removeSource);
-        }
-    }
-};
-
-CompressedTextureManager.prototype.updateAllTextures = function (resources, removeSource) {
-    for (var key in resources) {
-        var resource = resources[key];
-        if (resource.isCompressedImage) {
-            this.updateTexture(resource.texture.baseTexture, removeSource);
-        } else if (resource.isImage) {
-            this.renderer.updateTexture(resource.texture.baseTexture);
-        }
-    }
+    };
 };
