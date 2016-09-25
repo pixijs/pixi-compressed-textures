@@ -18,7 +18,7 @@ loader.load(function(loader, resources) {
 
 If your app has no detection of supported formats it is not ready for production.
 
-This [example](https://ivanpopelyshev.github.io/examples/index.html?s=textures&f=dds.js&title=DirectDrawSurface%20(DDS)&plugins=pixi-compressed-textures)
+This [example](http://pixijs.github.io/examples/#/textures/dds.js)
 shows how to handle multiple resolutions and multiple image formats for single images and for atlases.
 
 ```js
@@ -46,12 +46,6 @@ loader.add('building1', '_assets/compressed/building1.png', textureOptions1)
     .add('building2', '_assets/compressed/building2.png', textureOptions2)
     .add('atlas1', '_assets/compressed/buildings.json', atlasOptions )
     .load(function(loader, resources) {
-        // You have to preload all compressed textures into videomemory, pixi renderer cant do that for you.
-        // You also can specify different renderer or set in that function
-        // and this thing doesnt work for canvas
-        if (renderer.type == PIXI.RENDERER_TYPE.WEBGL)
-            renderer.plugins.compressedTextureManager.updateAllTextures(resources, true);
-
         var spr1 = new PIXI.Sprite(resources.building1.texture);
         var spr2 = new PIXI.Sprite(resources.building2.texture);
         var spr3 = new PIXI.Sprite.fromImage('goldmine_10_5.png');
@@ -89,7 +83,7 @@ loader.before(PIXI.compressedTextures.extensionChooser(PIXI.compressedTextures.d
 
 ## Building
 
-You will need to have [node][node] and [gulp][gulp] setup on your machine.
+You will need to have [node][node]
 
 Then you can install dependencies and build:
 
@@ -100,4 +94,3 @@ npm i && npm run build
 That will output the built distributables to `./dist`.
 
 [node]:       http://nodejs.org/
-[gulp]:       http://gulpjs.com/
