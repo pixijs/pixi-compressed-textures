@@ -18,7 +18,7 @@ loader.load(function(loader, resources) {
 
 If your app has no detection of supported formats it is not ready for production.
 
-This [example](ivanpopelyshev.github.io/examples/index.html?s=textures&f=dds.js&title=DirectDrawSurface%20(DDS)&plugins=pixi-compressed-textures)
+This [example](https://ivanpopelyshev.github.io/examples/index.html?s=textures&f=dds.js&title=DirectDrawSurface%20(DDS)&plugins=pixi-compressed-textures)
 shows how to handle multiple resolutions and multiple image formats for single images and for atlases.
 
 ```js
