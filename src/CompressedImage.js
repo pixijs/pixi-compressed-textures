@@ -71,9 +71,9 @@ CompressedImage.prototype.generateWebGLTexture = function (gl, preserveSource) {
 };
 
 /**
- * Charge une image compressée depuis un array buffer
- * @param arrayBuffer : le buffer à partir duquel charger l'image
- * @return la CompressedImage chargée
+ * Load a compressed image from an array buffer
+ * @param arrayBuffer the buffer contains the image
+ * @return the loaded CompressedImage
  */
 CompressedImage.loadFromArrayBuffer = function (arrayBuffer, src) {
     return new CompressedImage(src).loadFromArrayBuffer(arrayBuffer);
@@ -94,9 +94,9 @@ CompressedImage.prototype.loadFromArrayBuffer = function(arrayBuffer) {
 };
 
 /**
- * Charge une image compressГ©e au format DDS depuis un array buffer
- * @param arrayBuffer : le buffer Г  partir duquel charger l'image
- * @return la CompressedImage chargГ©e
+ * Load a DDS compressed image from an array buffer
+ * @param arrayBuffer the buffer contains the image
+ * @return the loaded CompressedImage
  */
 CompressedImage.prototype._loadDDS = function(arrayBuffer) {
     // Get a view of the arrayBuffer that represents the DDS header.
@@ -151,9 +151,9 @@ CompressedImage.prototype._loadDDS = function(arrayBuffer) {
 };
 
 /**
- * Charge une image compressГ©e au format PVR depuis un array buffer
- * @param arrayBuffer : le buffer Г  partir duquel charger l'image
- * @return la CompressedImage chargГ©e
+ * Load a PVR compressed image from an array buffer
+ * @param arrayBuffer the buffer contains the image
+ * @return the loaded CompressedImage
  */
 CompressedImage.prototype._loadPVR = function(arrayBuffer) {
     // Get a view of the arrayBuffer that represents the DDS header.
