@@ -8,7 +8,7 @@ var GLTextureMixin = {
     uploadNotCompressed: GLTexture.uploadNotCompressed,
     isCompressed: false,
     upload: function(source)
-    {
+    {   
         if (!(source instanceof CompressedImage)) {
             return this.uploadNotCompressed(source);
         }
@@ -24,7 +24,7 @@ var GLTextureMixin = {
     },
 
     enableMipmap: function() {
-        if (source.isCompressed) {
+        if (this.isCompressed) {
             return;
         }
         var gl = this.gl;
