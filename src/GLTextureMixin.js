@@ -5,10 +5,13 @@ var GLTexture = PIXI.glCore.GLTexture;
  * @mixin
  */
 var GLTextureMixin = {
+    source: null,
     uploadNotCompressed: GLTexture.uploadNotCompressed,
     isCompressed: false,
     upload: function(source)
     {
+        this.source = source;
+        
         if (!(source instanceof CompressedImage)) {
             return this.uploadNotCompressed(source);
         }
@@ -24,7 +27,7 @@ var GLTextureMixin = {
     },
 
     enableMipmap: function() {
-        if (source.isCompressed) {
+        if (this.source.isCompressed) {
             return;
         }
         var gl = this.gl;
