@@ -5,7 +5,7 @@ var GLTexture = PIXI.glCore.GLTexture;
  * @mixin
  */
 var GLTextureMixin = {
-    uploadNotCompressed: GLTexture.uploadNotCompressed,
+    uploadNotCompressed: GLTexture.prototype.upload,
     isCompressed: false,
     upload: function(source)
     {   
