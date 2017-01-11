@@ -1,6 +1,6 @@
 /*!
- * pixi-compressed-textures - v1.1.0
- * Compiled Sat Oct 08 2016 20:54:46 GMT+0300 (RTZ 2 (зима))
+ * pixi-compressed-textures - v1.1.1
+ * Compiled Wed, 11 Jan 2017 03:28:32 UTC
  *
  * pixi-compressed-textures is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -509,8 +509,8 @@ function imageParser() {
             }
             resource.isCompressedImage = true;
             resource.data = compressedImage;
-            resource.once('complete', function() {
-                resource.isImage = true;
+            resource.onComplete.add(function() {
+                resource.type = Resource.TYPE.IMAGE;
                 compressedImage.loadFromArrayBuffer(resource.data);
                 resource.data = compressedImage;
             });
