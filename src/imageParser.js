@@ -16,8 +16,8 @@ function imageParser() {
             }
             resource.isCompressedImage = true;
             resource.data = compressedImage;
-            resource.once('complete', function() {
-                resource.isImage = true;
+            resource.onComplete.add(function() {
+                resource.type = Resource.TYPE.IMAGE;
                 compressedImage.loadFromArrayBuffer(resource.data);
                 resource.data = compressedImage;
             });
