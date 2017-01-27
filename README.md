@@ -40,7 +40,7 @@ var textureOptions1 = { metadata: {choice: ["@2x.png", ".dds", "@2x.dds"]} };
 // use dds format if its windows but dont care for retina
 var textureOptions2 = { metadata: {choice: [".dds"]} };
 // while loading atlas, choose resolution for atlas and choose format for image
-var atlasOptions = { metadata: { choice: ["@2x.json"], imageMetadata: { choice: [".dds"]} } };
+var atlasOptions = { metadata: { choice: ["@2x.json", "@1x.json"], imageMetadata: { choice: [".dds"]} } };
 
 var stage = new PIXI.Container();
 
@@ -69,6 +69,13 @@ function animate() {
     renderer.render(stage);
 }
 ```
+
+## Note about atlases
+
+PIXI recognizes resolution of atlas by suffix (@1x, @2x, ... )
+
+If you dont specify that, resolution of the atlas will be taken from "meta.scale" which in our example is 1 and 0.5 instead of 2 and 1. It will shrink everything!
+
 
 ### Browserify
 
