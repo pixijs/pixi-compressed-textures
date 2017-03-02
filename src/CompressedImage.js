@@ -88,11 +88,11 @@ CompressedImage.prototype.loadFromArrayBuffer = function(arrayBuffer, crnLoad) {
         return this._loadDDS(arrayBuffer);
     else if (head[0] == "PVR".charCodeAt(0) && head[1] == "PVR".charCodeAt(1) && head[2] == "PVR".charCodeAt(2))
         return this._loadPVR(arrayBuffer);
+    else if(crnLoad)
+        return this._loadCRN(arrayBuffer);
     else
-				if(crnLoad) {
-        		return this._loadCRN(arrayBuffer);
-        }
         throw "Compressed texture format is not recognized: " + src;
+
     return this;
 };
 
@@ -101,13 +101,13 @@ CompressedImage.prototype.arrayBufferCopy = function(src, dst, dstByteOffset, nu
     var tail = (numBytes % 4);
     var src32 = new Uint32Array(src.buffer, 0, (numBytes - tail) / 4);
     var dst32 = new Uint32Array(dst.buffer);
-    for (var i = 0; i < src32.length; i++) {
-        dst32[dst32Offset + i] = src32[i];
+    for (var ii = 0; ii < src32.length; ii++) {
+        dst32[dst32Offset + ii] = src32[ii];
     }
     for (var i = numBytes - tail; i < numBytes; i++) {
         dst[dstByteOffset + i] = src[i];
     }
-}
+};
 
 CompressedImage.prototype._loadCRN = function(arrayBuffer) {
     // Taken from crnlib.h
@@ -123,28 +123,28 @@ CompressedImage.prototype._loadCRN = function(arrayBuffer) {
     DXT_FORMAT_MAP[CRN_FORMAT.cCRNFmtDXT5] = COMPRESSED_RGBA_S3TC_DXT5_EXT;
 
 
-    let srcSize = 0;
-    let bytes = 0;
-    let src = 0;
+    var srcSize = 0;
+    var bytes = 0;
+    var src = 0;
 
     srcSize = arrayBuffer.byteLength;
     bytes = new Uint8Array(arrayBuffer);
     src = Module._malloc(srcSize);
     CompressedImage.prototype.arrayBufferCopy(bytes, Module.HEAPU8, src, srcSize);
-    const width = Module._crn_get_width(src, srcSize);
-    const height = Module._crn_get_height(src, srcSize);
-    const levels = Module._crn_get_levels(src, srcSize);
-    const format = Module._crn_get_dxt_format(src, srcSize);
+    var width = Module._crn_get_width(src, srcSize);
+    var height = Module._crn_get_height(src, srcSize);
+    var levels = Module._crn_get_levels(src, srcSize);
+    var format = Module._crn_get_dxt_format(src, srcSize);
 
     srcSize = arrayBuffer.byteLength;
     bytes = new Uint8Array(arrayBuffer);
     src = Module._malloc(srcSize);
     CompressedImage.prototype.arrayBufferCopy(bytes, Module.HEAPU8, src, srcSize);
-    const dstSize = Module._crn_get_uncompressed_size(src, srcSize);
-    const dst = Module._malloc(dstSize);
+    var dstSize = Module._crn_get_uncompressed_size(src, srcSize);
+    var dst = Module._malloc(dstSize);
     Module._crn_decompress(src, srcSize, dst, dstSize);
-    const dxtData = new Uint8Array(Module.HEAPU8.buffer, dst, dstSize);
-    const internalFormat = DXT_FORMAT_MAP[format];
+    var dxtData = new Uint8Array(Module.HEAPU8.buffer, dst, dstSize);
+    var internalFormat = DXT_FORMAT_MAP[format];
     Module._free(src);
     Module._free(dst);
 
