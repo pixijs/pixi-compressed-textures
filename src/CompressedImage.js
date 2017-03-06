@@ -110,45 +110,32 @@ CompressedImage.prototype.arrayBufferCopy = function(src, dst, dstByteOffset, nu
 };
 
 CompressedImage.prototype._loadCRN = function(arrayBuffer) {
-    // Taken from crnlib.h
-    CRN_FORMAT = { cCRNFmtInvalid: -1, cCRNFmtDXT1: 0, cCRNFmtDXT3: 1, cCRNFmtDXT5: 2, cCRNFmtDXT5_CCxY: 3, cCRNFmtDXT5_xGxR: 4,
-                                 cCRNFmtDXT5_xGBR: 5, cCRNFmtDXT5_AGBR: 6, cCRNFmtDXN_XY: 7, cCRNFmtDXN_YX: 8, cCRNFmtDXT5A: 9};
-    CRN_FORMAT_NAMES = {};
-    for (var name in CRN_FORMAT) {
-      CRN_FORMAT_NAMES[CRN_FORMAT[name]] = name;
-    }
-    DXT_FORMAT_MAP = {};
-    DXT_FORMAT_MAP[CRN_FORMAT.cCRNFmtDXT1] = COMPRESSED_RGB_S3TC_DXT1_EXT;
-    DXT_FORMAT_MAP[CRN_FORMAT.cCRNFmtDXT3] = COMPRESSED_RGBA_S3TC_DXT3_EXT;
-    DXT_FORMAT_MAP[CRN_FORMAT.cCRNFmtDXT5] = COMPRESSED_RGBA_S3TC_DXT5_EXT;
+		// Taken from crnlib.h
+		DXT_FORMAT_MAP = [
+			COMPRESSED_RGB_S3TC_DXT1_EXT, 	// 0
+			COMPRESSED_RGBA_S3TC_DXT3_EXT,  // 1
+			COMPRESSED_RGBA_S3TC_DXT5_EXT 	// 2
+		];
 
+		var srcSize = arrayBuffer.byteLength;
+		var bytes = new Uint8Array(arrayBuffer);
+		var src = Module._malloc(srcSize);
+		CompressedImage.prototype.arrayBufferCopy(bytes, Module.HEAPU8, src, srcSize);
 
-    var srcSize = 0;
-    var bytes = 0;
-    var src = 0;
+		var width = Module._crn_get_width(src, srcSize);
+		var height = Module._crn_get_height(src, srcSize);
+		var levels = Module._crn_get_levels(src, srcSize);
+		var format = Module._crn_get_dxt_format(src, srcSize);
 
-    srcSize = arrayBuffer.byteLength;
-    bytes = new Uint8Array(arrayBuffer);
-    src = Module._malloc(srcSize);
-    CompressedImage.prototype.arrayBufferCopy(bytes, Module.HEAPU8, src, srcSize);
-    var width = Module._crn_get_width(src, srcSize);
-    var height = Module._crn_get_height(src, srcSize);
-    var levels = Module._crn_get_levels(src, srcSize);
-    var format = Module._crn_get_dxt_format(src, srcSize);
+		var dstSize = Module._crn_get_uncompressed_size(src, srcSize, 0);
+		var dst = Module._malloc(dstSize);
+		Module._crn_decompress(src, srcSize, dst, dstSize, 0);
+		var dxtData = new Uint8Array(Module.HEAPU8.buffer, dst, dstSize);
 
-    srcSize = arrayBuffer.byteLength;
-    bytes = new Uint8Array(arrayBuffer);
-    src = Module._malloc(srcSize);
-    CompressedImage.prototype.arrayBufferCopy(bytes, Module.HEAPU8, src, srcSize);
-    var dstSize = Module._crn_get_uncompressed_size(src, srcSize);
-    var dst = Module._malloc(dstSize);
-    Module._crn_decompress(src, srcSize, dst, dstSize);
-    var dxtData = new Uint8Array(Module.HEAPU8.buffer, dst, dstSize);
-    var internalFormat = DXT_FORMAT_MAP[format];
-    Module._free(src);
-    Module._free(dst);
+		Module._free(src);
+		Module._free(dst);
 
-    return this.init(this.src, dxtData, 'DDS', width, height, levels, internalFormat);
+		return this.init(this.src, dxtData, 'DDS', width, height, levels, DXT_FORMAT_MAP[format]);
 };
 /**
  * Load a DDS compressed image from an array buffer
