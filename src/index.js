@@ -4,7 +4,7 @@ var plugin = {
     extensionChooser: require('./extensionChooser'),
     extensionFixer: require('./extensionFixer'),
     GLTextureMixin: require('./GLTextureMixin'),
-    crn: require('./crn'),
+    crn: require('./crn_decomp'),
     detectExtensions: function (renderer, resolution) {
         var extensions = [];
         if (renderer instanceof PIXI.WebGLRenderer) {

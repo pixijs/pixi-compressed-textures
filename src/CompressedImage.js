@@ -4,7 +4,7 @@ function CompressedImage(src, data, type, width, height, levels, internalFormat)
 
 module.exports = CompressedImage;
 
-CompressedImage.prototype.init = function(src, data, type, width, height, levels, internalFormat) {
+CompressedImage.prototype.init = function(src, data, type, width, height, levels, internalFormat, crunchCache) {
     this.src = src;
     this.width = width;
     this.height = height;
@@ -13,6 +13,7 @@ CompressedImage.prototype.init = function(src, data, type, width, height, levels
     this.levels = levels;
     this.internalFormat = internalFormat;
     this.isCompressedImage = true;
+		this.crunch = crunchCache;
 
     var oldComplete = this.complete;
     this.complete = !!data;
@@ -64,6 +65,11 @@ CompressedImage.prototype.generateWebGLTexture = function (gl, preserveSource) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     }
+
+		if(this.crunch) {
+			Module._free(this.crunch[0]); // source
+			Module._free(this.crunch[1]); // destination
+		}
 
     // Cleaning the data to save memory. NOTE : BECAUSE OF THIS WE CANNOT CREATE TWO GL TEXTURE FROM THE SAME COMPRESSED IMAGE !
     if (!preserveSource)
@@ -132,10 +138,7 @@ CompressedImage.prototype._loadCRN = function(arrayBuffer) {
 		Module._crn_decompress(src, srcSize, dst, dstSize, 0);
 		var dxtData = new Uint8Array(Module.HEAPU8.buffer, dst, dstSize);
 
-		Module._free(src);
-		Module._free(dst);
-
-		return this.init(this.src, dxtData, 'DDS', width, height, levels, DXT_FORMAT_MAP[format]);
+		return this.init(this.src, dxtData, 'CRN', width, height, levels, DXT_FORMAT_MAP[format], [src, dst]);
 };
 /**
  * Load a DDS compressed image from an array buffer
