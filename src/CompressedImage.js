@@ -89,7 +89,7 @@ CompressedImage.prototype.loadFromArrayBuffer = function(arrayBuffer) {
     else if (head[0] == "PVR".charCodeAt(0) && head[1] == "PVR".charCodeAt(1) && head[2] == "PVR".charCodeAt(2))
         return this._loadPVR(arrayBuffer);
     else
-        throw "Compressed texture format is not recognized: " + src;
+        throw "Compressed texture format is not recognized: " + this.src;
     return this;
 };
 
