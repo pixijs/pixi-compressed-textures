@@ -97,7 +97,7 @@ CompressedImage.prototype.loadFromArrayBuffer = function(arrayBuffer, crnLoad) {
     else if(crnLoad)
         return this._loadCRN(arrayBuffer);
     else
-        throw "Compressed texture format is not recognized: " + src;
+				throw "Compressed texture format is not recognized: " + this.src;
 
     return this;
 };
