@@ -1,4 +1,5 @@
 var plugin = {
+    CompressedImage: require('./CompressedImage'),
     CompressedTextureManager: require('./CompressedTextureManager'),
     imageParser: require('./imageParser'),
     extensionChooser: require('./extensionChooser'),
