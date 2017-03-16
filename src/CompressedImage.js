@@ -4,7 +4,7 @@ function CompressedImage(src, data, type, width, height, levels, internalFormat)
 
 module.exports = CompressedImage;
 
-CompressedImage.prototype.init = function(src, data, type, width, height, levels, internalFormat) {
+CompressedImage.prototype.init = function(src, data, type, width, height, levels, internalFormat, crunchCache) {
     this.src = src;
     this.width = width;
     this.height = height;
@@ -13,6 +13,7 @@ CompressedImage.prototype.init = function(src, data, type, width, height, levels
     this.levels = levels;
     this.internalFormat = internalFormat;
     this.isCompressedImage = true;
+		this.crunch = crunchCache;
 
     var oldComplete = this.complete;
     this.complete = !!data;
@@ -65,6 +66,11 @@ CompressedImage.prototype.generateWebGLTexture = function (gl, preserveSource) {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     }
 
+		if(this.crunch) {
+			Module._free(this.crunch[0]); // source
+			Module._free(this.crunch[1]); // destination
+		}
+
     // Cleaning the data to save memory. NOTE : BECAUSE OF THIS WE CANNOT CREATE TWO GL TEXTURE FROM THE SAME COMPRESSED IMAGE !
     if (!preserveSource)
         this.data = null;
@@ -79,7 +85,7 @@ CompressedImage.loadFromArrayBuffer = function (arrayBuffer, src) {
     return new CompressedImage(src).loadFromArrayBuffer(arrayBuffer);
 };
 
-CompressedImage.prototype.loadFromArrayBuffer = function(arrayBuffer) {
+CompressedImage.prototype.loadFromArrayBuffer = function(arrayBuffer, crnLoad) {
     var head = new Uint8Array(arrayBuffer, 0, 3);
 
     //todo: implement onload
@@ -88,11 +94,51 @@ CompressedImage.prototype.loadFromArrayBuffer = function(arrayBuffer) {
         return this._loadDDS(arrayBuffer);
     else if (head[0] == "PVR".charCodeAt(0) && head[1] == "PVR".charCodeAt(1) && head[2] == "PVR".charCodeAt(2))
         return this._loadPVR(arrayBuffer);
+    else if(crnLoad)
+        return this._loadCRN(arrayBuffer);
     else
         throw "Compressed texture format is not recognized: " + this.src;
     return this;
 };
 
+CompressedImage.prototype.arrayBufferCopy = function(src, dst, dstByteOffset, numBytes) {
+    dst32Offset = dstByteOffset / 4;
+    var tail = (numBytes % 4);
+    var src32 = new Uint32Array(src.buffer, 0, (numBytes - tail) / 4);
+    var dst32 = new Uint32Array(dst.buffer);
+    for (var ii = 0; ii < src32.length; ii++) {
+        dst32[dst32Offset + ii] = src32[ii];
+    }
+    for (var i = numBytes - tail; i < numBytes; i++) {
+        dst[dstByteOffset + i] = src[i];
+    }
+};
+
+CompressedImage.prototype._loadCRN = function(arrayBuffer) {
+		// Taken from crnlib.h
+		DXT_FORMAT_MAP = [
+			COMPRESSED_RGB_S3TC_DXT1_EXT, 	// 0
+			COMPRESSED_RGBA_S3TC_DXT3_EXT,  // 1
+			COMPRESSED_RGBA_S3TC_DXT5_EXT 	// 2
+		];
+
+		var srcSize = arrayBuffer.byteLength;
+		var bytes = new Uint8Array(arrayBuffer);
+		var src = Module._malloc(srcSize);
+		CompressedImage.prototype.arrayBufferCopy(bytes, Module.HEAPU8, src, srcSize);
+
+		var width = Module._crn_get_width(src, srcSize);
+		var height = Module._crn_get_height(src, srcSize);
+		var levels = Module._crn_get_levels(src, srcSize);
+		var format = Module._crn_get_dxt_format(src, srcSize);
+
+		var dstSize = Module._crn_get_uncompressed_size(src, srcSize, 0);
+		var dst = Module._malloc(dstSize);
+		Module._crn_decompress(src, srcSize, dst, dstSize, 0);
+		var dxtData = new Uint8Array(Module.HEAPU8.buffer, dst, dstSize);
+
+		return this.init(this.src, dxtData, 'CRN', width, height, levels, DXT_FORMAT_MAP[format], [src, dst]);
+};
 /**
  * Load a DDS compressed image from an array buffer
  * @param arrayBuffer the buffer contains the image
