@@ -3,6 +3,8 @@ Compressed textures and retina support for pixi v4. Loader can choose textures d
 
 Supports DDS (S3TC DXT1-3-5, ATC, ATCA/ATC explicit, ATCI/ATC interpolated) and PVR (PVRTC, ETC1, S3TC DXT1-3-5, PVRTC 2-4bpp RGB-RGBA)
 
+Supports advanced DXT compression [crunch](https://github.com/BinomialLLC/crunch)
+
 ## Minimum demo
 
 Pretty easy to hack parser into your loader.
