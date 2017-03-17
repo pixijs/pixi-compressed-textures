@@ -16,7 +16,7 @@ CompressedTextureManager.prototype = Object.create(WebGLManager.prototype);
 CompressedTextureManager.prototype.constructor = CompressedTextureManager;
 
 CompressedTextureManager.prototype.onContextChange = function() {
-    const gl = this.renderer.gl;
+    var gl = this.renderer.gl;
     function getExtension(gl, name) {
         var vendorPrefixes = ["", "WEBKIT_", "MOZ_"];
         var ext = null;
