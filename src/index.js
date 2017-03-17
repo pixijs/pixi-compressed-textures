@@ -5,7 +5,6 @@ var plugin = {
     extensionChooser: require('./extensionChooser'),
     extensionFixer: require('./extensionFixer'),
     GLTextureMixin: require('./GLTextureMixin'),
-    crn: require('./../lib/crn_decomp'),
     detectExtensions: function (renderer, resolution) {
         var extensions = [];
         if (renderer instanceof PIXI.WebGLRenderer) {
@@ -31,6 +30,14 @@ var plugin = {
         return extensions;
     }
 };
+
+try {
+    plugin.crn = require('./../lib/crn_decomp');
+} catch (e) {
+    //oh well, couldn't require it - probably due to eval() not being allowed in whatever context
+    //we are loaded in
+    console.warn('Unable to load crn decompression in pixi-compressed-textures');
+}
 
 Object.assign(PIXI.glCore.GLTexture.prototype, plugin.GLTextureMixin);
 
