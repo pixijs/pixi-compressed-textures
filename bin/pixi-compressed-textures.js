@@ -1,6 +1,6 @@
 /*!
- * pixi-compressed-textures - v1.1.4
- * Compiled Thu, 23 Mar 2017 17:17:39 UTC
+ * pixi-compressed-textures - v1.1.5
+ * Compiled Thu, 23 Mar 2017 17:19:24 UTC
  *
  * pixi-compressed-textures is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -597,7 +597,7 @@ CompressedTextureManager.prototype = Object.create(WebGLManager.prototype);
 CompressedTextureManager.prototype.constructor = CompressedTextureManager;
 
 CompressedTextureManager.prototype.onContextChange = function() {
-    const gl = this.renderer.gl;
+    var gl = this.renderer.gl;
     function getExtension(gl, name) {
         var vendorPrefixes = ["", "WEBKIT_", "MOZ_"];
         var ext = null;
@@ -771,7 +771,6 @@ var plugin = {
     extensionChooser: require('./extensionChooser'),
     extensionFixer: require('./extensionFixer'),
     GLTextureMixin: require('./GLTextureMixin'),
-    crn: require('./../lib/crn_decomp'),
     detectExtensions: function (renderer, resolution) {
         var extensions = [];
         if (renderer instanceof PIXI.WebGLRenderer) {
@@ -797,6 +796,14 @@ var plugin = {
         return extensions;
     }
 };
+
+try {
+    plugin.crn = require('./../lib/crn_decomp');
+} catch (e) {
+    //oh well, couldn't require it - probably due to eval() not being allowed in whatever context
+    //we are loaded in
+    console.warn('Unable to load crn decompression in pixi-compressed-textures');
+}
 
 Object.assign(PIXI.glCore.GLTexture.prototype, plugin.GLTextureMixin);
 
