@@ -13,7 +13,8 @@ CompressedImage.prototype.init = function(src, data, type, width, height, levels
     this.levels = levels;
     this.internalFormat = internalFormat;
     this.isCompressedImage = true;
-		this.crunch = crunchCache;
+    this.crunch = crunchCache;
+    this.preserveSource = true;
 
     var oldComplete = this.complete;
     this.complete = !!data;
@@ -27,7 +28,7 @@ CompressedImage.prototype.dispose = function() {
     this.data = null;
 };
 
-CompressedImage.prototype.generateWebGLTexture = function (gl, preserveSource) {
+CompressedImage.prototype.generateWebGLTexture = function (gl) {
     if (this.data === null) {
         throw "Trying to create a second (or more) webgl texture from the same CompressedImage : " + this.src;
     }
@@ -72,7 +73,7 @@ CompressedImage.prototype.generateWebGLTexture = function (gl, preserveSource) {
 		}
 
     // Cleaning the data to save memory. NOTE : BECAUSE OF THIS WE CANNOT CREATE TWO GL TEXTURE FROM THE SAME COMPRESSED IMAGE !
-    if (!preserveSource)
+    if (!this.preserveSource)
         this.data = null;
 };
 
