@@ -10,9 +10,10 @@ function extensionChooser(supportedExtensions) {
         }
         //let us choose extension!
         var url = resource.url;
+        var k = 0;
         if (!resource._defaultUrlChoice) {
             resource._defaultUrlChoice = url;
-            var k = url.lastIndexOf(".");
+            k = url.lastIndexOf(".");
             if (k >= 0) {
                 resource._baseUrl = url.substring(0, k);
             } else {
@@ -25,6 +26,12 @@ function extensionChooser(supportedExtensions) {
             for (var j = 0; j < supportedExtensions.length; j++) {
                 if (ext[i] === supportedExtensions[j]) {
                     resource.url = url;
+
+                    var pureExt = ext[i];
+                    k = ext[i].indexOf('.');
+                    if (k>=0) pureExt = ext[i].substring(k+1);
+
+                    resource.extension = pureExt;
                     resource.loadType = resource._determineLoadType();
                     return imageParser(resource, next);
                 }
