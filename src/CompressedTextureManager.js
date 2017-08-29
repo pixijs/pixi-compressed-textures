@@ -32,6 +32,7 @@ CompressedTextureManager.prototype.onContextChange = function() {
     this.extensions = {
         dxt: getExtension(gl, "WEBGL_compressed_texture_s3tc"),
         pvrtc: getExtension(gl, "WEBGL_compressed_texture_pvrtc"),
+        astc: getExtension(gl, "WEBGL_compressed_texture_astc"),
         atc: getExtension(gl, "WEBGL_compressed_texture_atc")
     };
     // CRN exists only with DXT!

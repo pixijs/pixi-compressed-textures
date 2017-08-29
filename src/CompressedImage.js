@@ -95,6 +95,8 @@ CompressedImage.prototype.loadFromArrayBuffer = function(arrayBuffer, crnLoad) {
         return this._loadDDS(arrayBuffer);
     else if (head[0] == "PVR".charCodeAt(0) && head[1] == "PVR".charCodeAt(1) && head[2] == "PVR".charCodeAt(2))
         return this._loadPVR(arrayBuffer);
+    else if (head[0] == 0x13 && head[1] == 0xab && head[2] == 0xa1)
+        return this._loadASTC(arrayBuffer);
     else if(crnLoad)
         return this._loadCRN(arrayBuffer);
     else
@@ -198,6 +200,68 @@ CompressedImage.prototype._loadDDS = function(arrayBuffer) {
 };
 
 /**
+ * Load a ASTC compressed image from an array buffer
+ * @param arrayBuffer the buffer contains the image
+ * @return the loaded CompressedImage
+ */
+CompressedImage.prototype._loadASTC = function(arrayBuffer) {
+    // Get a view of the arrayBuffer that represents the DDS header.
+        
+    var header = new Int8Array(arrayBuffer, 0, ASTC_HEADER_LENGTH);
+
+    var magic = new Uint32Array(arrayBuffer.slice(0,4));
+
+    // Do some sanity checks to make sure this is a valid DDS file.
+    if (magic != ASTC_MAGIC) //0x5ca1ab13
+        throw "Invalid magic number in ASTC header";
+
+    // Determine what type of compressed data the file contains.
+    var detectFormats = [COMPRESSED_RGBA_ASTC_4x4_KHR,
+                        COMPRESSED_RGBA_ASTC_5x4_KHR,
+                        COMPRESSED_RGBA_ASTC_5x5_KHR,
+                        COMPRESSED_RGBA_ASTC_6x5_KHR,
+                        COMPRESSED_RGBA_ASTC_6x6_KHR,
+                        COMPRESSED_RGBA_ASTC_8x5_KHR,
+                        COMPRESSED_RGBA_ASTC_8x6_KHR,
+                        COMPRESSED_RGBA_ASTC_8x8_KHR,
+                        COMPRESSED_RGBA_ASTC_10x5_KHR,
+                        COMPRESSED_RGBA_ASTC_10x6_KHR,
+                        COMPRESSED_RGBA_ASTC_10x8_KHR,
+                        COMPRESSED_RGBA_ASTC_10x10_KHR,
+                        COMPRESSED_RGBA_ASTC_12x10_KHR,
+                        COMPRESSED_RGBA_ASTC_12x12_KHR];
+
+/*
+*/
+    
+    //https://developer.mozilla.org/en-US/docs/Web/API/WEBGL_compressed_texture_astc
+    var dataSize = arrayBuffer.byteLength-ASTC_HEADER_LENGTH; //loaded image data payload size in bytes
+    
+    //retieve width and height of texture from the astc file header
+    var widthBytes=new Uint8Array([header[7], header[8], header[9], 0]);
+    var heightBytes=new Uint8Array([header[10], header[11], header[12], 0]);
+    var width = new Uint32Array(widthBytes.buffer)[0];
+    var height = new Uint32Array(heightBytes.buffer)[0];
+    
+    //detect format from data size
+    var internalFormat = 0;  
+    for(var i=0;i<detectFormats.length;i++){
+        if(dataSize === textureLevelSize(detectFormats[i], width, height)){
+            internalFormat=detectFormats[i];
+            break;
+        }
+    }
+    if(internalFormat == 0)
+        throw "Unable to autodetect ASTC format; file size not right";
+    
+    var dataOffset = ASTC_HEADER_LENGTH; 
+    var astcData = new Uint8Array(arrayBuffer, dataOffset, dataSize);
+    
+    var levels=1;
+    return this.init(this.src, astcData, 'ASTC', width, height, levels, internalFormat);
+};
+
+/**
  * Load a PVR compressed image from an array buffer
  * @param arrayBuffer the buffer contains the image
  * @return the loaded CompressedImage
@@ -298,6 +362,50 @@ function textureLevelSize(format, width, height) {
         case COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
             return Math.floor((Math.max(width, 16) * Math.max(height, 8) * 2 + 7) / 8);
 
+    	//ASTC formats, https://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_astc/
+        case COMPRESSED_RGBA_ASTC_4x4_KHR:
+        case COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR:
+            return Math.floor((width + 3) / 4) *  Math.floor((height + 3) / 4) * 16; 
+        case COMPRESSED_RGBA_ASTC_5x4_KHR:
+        case COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR:
+            return Math.floor((width + 4) / 5) * Math.floor((height + 3) / 4) * 16;
+        case COMPRESSED_RGBA_ASTC_5x5_KHR:
+        case COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR:
+            return Math.floor((width + 4) / 5) * Math.floor((height + 4) / 5) * 16;
+        case COMPRESSED_RGBA_ASTC_6x5_KHR:
+        case COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR:
+            return Math.floor((width + 5) / 6) *  Math.floor((height + 4) / 5) * 16;
+        case COMPRESSED_RGBA_ASTC_6x6_KHR:
+        case COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR:
+             return Math.floor((width + 5) / 6) * Math.floor((height + 5) / 6) * 16;
+        case COMPRESSED_RGBA_ASTC_8x5_KHR:
+        case COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR:
+             return Math.floor((width + 7) / 8) * Math.floor((height + 4) / 5) * 16;
+        case COMPRESSED_RGBA_ASTC_8x6_KHR:
+        case COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR:
+             return Math.floor((width + 7) / 8) * Math.floor((height + 5) / 6) * 16;
+        case COMPRESSED_RGBA_ASTC_8x8_KHR:
+        case COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR:
+             return Math.floor((width + 7) / 8) * Math.floor((height + 7) / 8) * 16;
+        case COMPRESSED_RGBA_ASTC_10x5_KHR:
+        case COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR:
+             return Math.floor((width + 9) / 10) * Math.floor((height + 4) / 5) * 16;
+        case COMPRESSED_RGBA_ASTC_10x6_KHR:
+        case COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR:
+             return Math.floor((width + 9) / 10) * Math.floor((height + 5) / 6) * 16;
+        case COMPRESSED_RGBA_ASTC_10x8_KHR:
+        case COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR:
+             return Math.floor((width + 9) / 10) * Math.floor((height + 7) / 8) * 16;
+        case COMPRESSED_RGBA_ASTC_10x10_KHR:
+        case COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR:
+             return Math.floor((width + 9) / 10) * Math.floor((height + 9) / 10) * 16;
+        case COMPRESSED_RGBA_ASTC_12x10_KHR:
+        case COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR:
+             return Math.floor((width + 11) / 12) * Math.floor((height + 9) / 10) * 16;
+        case COMPRESSED_RGBA_ASTC_12x12_KHR:
+        case COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR:
+             return Math.floor((width + 11) / 12) * Math.floor((height + 11) / 12) * 16; 
+
         default:
             return 0;
     }
@@ -315,6 +423,43 @@ var COMPRESSED_RGBA_S3TC_DXT5_EXT = 0x83F3;
 var COMPRESSED_RGB_ATC_WEBGL = 0x8C92;
 var COMPRESSED_RGBA_ATC_EXPLICIT_ALPHA_WEBGL = 0x8C93;
 var COMPRESSED_RGBA_ATC_INTERPOLATED_ALPHA_WEBGL = 0x87EE;
+
+//ASTC formats
+//https://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_astc/
+var COMPRESSED_RGBA_ASTC_4x4_KHR = 0x93B0;  
+var COMPRESSED_RGBA_ASTC_5x4_KHR = 0x93B1;
+var COMPRESSED_RGBA_ASTC_5x5_KHR = 0x93B2;
+var COMPRESSED_RGBA_ASTC_6x5_KHR = 0x93B3;
+var COMPRESSED_RGBA_ASTC_6x6_KHR = 0x93B4;
+var COMPRESSED_RGBA_ASTC_8x5_KHR = 0x93B5;
+var COMPRESSED_RGBA_ASTC_8x6_KHR = 0x93B6;
+var COMPRESSED_RGBA_ASTC_8x8_KHR = 0x93B7;
+var COMPRESSED_RGBA_ASTC_10x5_KHR = 0x93B8;
+var COMPRESSED_RGBA_ASTC_10x6_KHR = 0x93B9;
+var COMPRESSED_RGBA_ASTC_10x8_KHR = 0x93BA;
+var COMPRESSED_RGBA_ASTC_10x10_KHR = 0x93BB;
+var COMPRESSED_RGBA_ASTC_12x10_KHR = 0x93BC;
+var COMPRESSED_RGBA_ASTC_12x12_KHR = 0x93BD;
+
+/*
+ No support for SRGB formats 
+ - no way how to determine RGB vs SRGB from ASTC file
+ */
+var COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR = 0x93D0;
+var COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR = 0x93D1;
+var COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR = 0x93D2;
+var COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR = 0x93D3;
+var COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR = 0x93D4;
+var COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR = 0x93D5;
+var COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR = 0x93D6;
+var COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR = 0x93D7;
+var COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR = 0x93D8;
+var COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR = 0x93D9;
+var COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR = 0x93DA;
+var COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR = 0x93DB;
+var COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR = 0x93DC;
+var COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR = 0x93DD;
+
 
 // DXT values and structures referenced from:
 // http://msdn.microsoft.com/en-us/library/bb943991.aspx/
@@ -380,3 +525,9 @@ var PVR_HEADER_HEIGHT = 6;
 var PVR_HEADER_WIDTH = 7;
 var PVR_HEADER_MIPMAPCOUNT = 11;
 var PVR_HEADER_METADATA = 12;
+
+//===============//
+// ASTC constants //
+//===============//
+var ASTC_HEADER_LENGTH = 16; // The header length in bytes.
+var ASTC_MAGIC = 0x5ca1ab13;
