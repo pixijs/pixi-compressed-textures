@@ -28,8 +28,16 @@ function extensionChooser(supportedExtensions) {
                     resource.url = url;
 
                     var pureExt = ext[i];
-                    k = ext[i].indexOf('.');
-                    if (k>=0) pureExt = ext[i].substring(k+1);
+                    if (pureExt.indexOf('@') > -1){
+                        //@0.5x.dds should have pureExt "dds", not 5x.dds
+                        // -> remove format specifier (@2x, @0.5x) before
+                        //determining the extension
+                        pureExt=pureExt.replace(/@[0-9.]*x/,""); 
+                    }
+                    k = pureExt.indexOf('.');
+                    if (k >= 0){
+                        pureExt = pureExt.substring(k+1);
+                    }
 
                     resource.extension = pureExt;
                     resource.loadType = resource._determineLoadType();
