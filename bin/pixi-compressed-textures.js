@@ -1,6 +1,6 @@
 /*!
- * pixi-compressed-textures - v1.1.6
- * Compiled Thu, 04 Jan 2018 18:00:00 UTC
+ * pixi-compressed-textures - v1.1.7
+ * Compiled Thu, 04 Jan 2018 19:49:28 UTC
  *
  * pixi-compressed-textures is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
