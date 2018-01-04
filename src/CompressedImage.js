@@ -251,7 +251,7 @@ CompressedImage.prototype._loadASTC = function(arrayBuffer) {
             break;
         }
     }
-    if(internalFormat == 0)
+    if(internalFormat === 0)
         throw "Unable to autodetect ASTC format; file size not right";
     
     var dataOffset = ASTC_HEADER_LENGTH; 
