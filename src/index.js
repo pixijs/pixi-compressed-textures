@@ -13,6 +13,7 @@ var plugin = {
             if (data.pvrtc) extensions.push('.pvr');
             if (data.atc) extensions.push('.atc');
             if (data.astc) extensions.push('.astc');
+            if (data.etc1) extensions.push('.etc1');
         } else if (renderer instanceof PIXI.CanvasRenderer) {
             //nothing special for canvas
         }
