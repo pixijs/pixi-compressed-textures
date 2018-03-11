@@ -1,6 +1,6 @@
 /*!
- * pixi-compressed-textures - v1.1.7
- * Compiled Thu, 04 Jan 2018 19:49:28 UTC
+ * pixi-compressed-textures - v1.1.8
+ * Compiled Sun, 11 Mar 2018 12:30:21 UTC
  *
  * pixi-compressed-textures is licensed under the MIT License.
  * http://www.opensource.org/licenses/mit-license
@@ -22840,7 +22840,8 @@ CompressedTextureManager.prototype.onContextChange = function() {
         dxt: getExtension(gl, "WEBGL_compressed_texture_s3tc"),
         pvrtc: getExtension(gl, "WEBGL_compressed_texture_pvrtc"),
         astc: getExtension(gl, "WEBGL_compressed_texture_astc"),
-        atc: getExtension(gl, "WEBGL_compressed_texture_atc")
+        atc: getExtension(gl, "WEBGL_compressed_texture_atc"),
+        etc1: getExtension(gl, "WEBGL_compressed_texture_etc1")
     };
     // CRN exists only with DXT!
     this.extensions.crn = this.extensions.dxt;
@@ -23022,6 +23023,7 @@ var plugin = {
             if (data.pvrtc) extensions.push('.pvr');
             if (data.atc) extensions.push('.atc');
             if (data.astc) extensions.push('.astc');
+            if (data.etc1) extensions.push('.etc1');
         } else if (renderer instanceof PIXI.CanvasRenderer) {
             //nothing special for canvas
         }
