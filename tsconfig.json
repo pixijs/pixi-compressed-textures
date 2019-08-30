@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "module": "none",
+        "target": "es5",
+        "noImplicitAny": true,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "outFile": "dist/pixi-compressed-textures.js",
+        "sourceMap": true,
+        "inlineSources": true,
+        "declaration": true
+	},
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules/**/*"
+    ]
+}

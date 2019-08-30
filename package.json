@@ -1,13 +1,12 @@
 {
   "name": "pixi-compressed-textures",
-  "version": "1.1.8",
+  "version": "2.0.0",
   "description": "Advanced features for pixijs textures: compression, better loader",
   "author": "Ivan Popelyshev",
   "contributors": [
     "Ivan Popelyshev <ivan.popelyshev@gmail.com>",
     "Chad Engler <chad@pantherdev.com>"
   ],
-  "main": "./src/index.js",
   "homepage": "https://github.com/pixijs/pixi-compressed-textures",
   "bugs": {
     "url": "https://github.com/pixijs/pixi-compressed-textures/issues"
@@ -22,48 +21,33 @@
     "2d",
     "render"
   ],
+  "main": "./dist/pixi-compressed-textures.js",
+  "types": "./dist/pixi-compressed-textures.d.ts",
+  "homepage": "https://github.com/pixijs/pixi-spine",
   "scripts": {
-    "clean": "rimraf bin && mkdirp bin",
-    "prestart": "npm run clean",
-    "start": "parallelshell \"npm run watch:lint\" \"npm run watch\"",
-    "watch": "pixify -o pixi-compressed-textures -w",
-    "watch:lint": "watch \"jshint --reporter=scripts/reporter.js scripts src test || exit 0\" src",
-    "lint": "jshint --reporter=scripts/reporter.js scripts src",
-    "prebuild": "npm run lint && npm run clean",
-    "build": "pixify -o pixi-compressed-textures",
-    "docs": "jsdoc -c scripts/jsdoc.conf.json -R README.md"
+    "cleanup": "rimraf dist && mkdirp dist",
+    "prestart": "yarn cleanup",
+    "start": "parallelshell \"yarn watch\"",
+    "watch": "tsc -w",
+    "prebuild": "yarn cleanup",
+    "make:dts": "node scripts/make_dts.js",
+    "build": "tsc && yarn make:dts"
   },
   "files": [
     "bin/",
-    "lib/",
-    "src/",
-    "CONTRIBUTING.md",
-    "LICENSE",
+    "SPINE-LICENSE",
     "package.json",
     "README.md"
   ],
-  "dependencies": {
-    "glslify": "^5.0.2",
-    "browserify-versionify": "^1.0.6"
-  },
   "devDependencies": {
-    "del": "^2.2.0",
-    "jaguarjs-jsdoc": "^1.0.1",
-    "jsdoc": "^3.4.0",
-    "jshint": "^2.9.2",
-    "jshint-stylish": "^2.2.0",
-    "jshint-stylish-summary": "^0.1.2",
-    "minimist": "^1.2.0",
-    "mkdirp": "^0.5.1",
-    "parallelshell": "^2.0.0",
-    "pixify": "^1.4.0",
-    "rimraf": "^2.5.3",
-    "watch": "^0.19.1"
-  },
-  "browserify": {
-    "transform": [
-      "glslify",
-      "browserify-versionify"
-    ]
+    "del": "~2.2.0",
+    "glob": "~7.1.1",
+    "mkdirp": "~0.5.1",
+    "parallelshell": "~2.0.0",
+    "pixi.js": "~5.1.2",
+    "rimraf": "~2.5.3",
+    "tmp": "^0.0.33",
+    "ts-helpers": "~1.1.2",
+    "typescript": "^3.5.3"
   }
 }
