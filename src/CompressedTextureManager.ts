@@ -1,49 +1,49 @@
-var core = PIXI,
-    CompressedImage = require('./CompressedImage'),
-    WebGLManager = core.WebGLManager;
-/**
- * @class
- * @memberof PIXI.compressedTextures
- * @extends PIXI.WebGLManager
- * @param renderer {PIXI.WebGLRenderer} The renderer this manager works for.
- */
-function CompressedTextureManager(renderer) {
-    WebGLManager.call(this, renderer);
-    this.extensions = {};
+declare namespace PIXI.systems {
+    interface TextureSystem {
+        initCompressed?(): void;
+
+        compressedExtensions?: any;
+    }
 }
 
-CompressedTextureManager.prototype = Object.create(WebGLManager.prototype);
-CompressedTextureManager.prototype.constructor = CompressedTextureManager;
-
-CompressedTextureManager.prototype.onContextChange = function() {
-    var gl = this.renderer.gl;
-    function getExtension(gl, name) {
-        var vendorPrefixes = ["", "WEBKIT_", "MOZ_"];
-        var ext = null;
-        for (var i in vendorPrefixes) {
-            ext = gl.getExtension(vendorPrefixes[i] + name);
-            if (ext) {
-                break;
-            }
+namespace pixi_compressed_textures {
+    PIXI.systems.TextureSystem.prototype.initCompressed = function() {
+        const gl = this.gl;
+        if (!this.compressedExtensions) {
+            this.compressedExtensions = {
+                dxt: gl.getExtension("WEBGL_compressed_texture_s3tc"),
+                pvrtc: gl.getExtension("WEBGL_compressed_texture_pvrtc"),
+                astc: gl.getExtension("WEBGL_compressed_texture_astc"),
+                atc: gl.getExtension("WEBGL_compressed_texture_atc"),
+                etc1: gl.getExtension("WEBGL_compressed_texture_etc1")
+            };
+            this.compressedExtensions.crn = this.compressedExtensions.dxt;
         }
-        return ext;
-    }
-
-    this.extensions = {
-        dxt: getExtension(gl, "WEBGL_compressed_texture_s3tc"),
-        pvrtc: getExtension(gl, "WEBGL_compressed_texture_pvrtc"),
-        astc: getExtension(gl, "WEBGL_compressed_texture_astc"),
-        atc: getExtension(gl, "WEBGL_compressed_texture_atc"),
-        etc1: getExtension(gl, "WEBGL_compressed_texture_etc1")
     };
-    // CRN exists only with DXT!
-    this.extensions.crn = this.extensions.dxt;
-};
 
-module.exports = CompressedTextureManager;
-
-core.WebGLRenderer.registerPlugin('compressedTextureManager', CompressedTextureManager);
-
-CompressedTextureManager.prototype.getSupportedExtensions = function () {
-    return this.extensions;
-};
+    export function detectExtensions(renderer: PIXI.Renderer, resolution?: number) {
+        let extensions = [];
+        if (renderer instanceof PIXI.Renderer) {
+            renderer.texture.initCompressed();
+            let data = renderer.texture.compressedExtensions;
+            if (data.dxt) extensions.push('.dds');
+            if (data.pvrtc) extensions.push('.pvr');
+            if (data.atc) extensions.push('.atc');
+            if (data.astc) extensions.push('.astc');
+            if (data.etc1) extensions.push('.etc1');
+        }
+        //retina or not
+        resolution = resolution || renderer.resolution;
+        let res = "@"+resolution+"x";
+        let ext = extensions.slice(0);
+        while (ext.length > 0) {
+            extensions.push(res + ext.pop());
+        }
+        extensions.push(res + ".png");
+        extensions.push(res + ".jpg");
+        //atlas support @1x @2x @.5x
+        extensions.push(res + ".json");
+        extensions.push(res + ".atlas");
+        return extensions;
+    }
+}

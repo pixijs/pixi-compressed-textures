@@ -25,7 +25,7 @@ tmp.file(function (err, filename) {
     var dtsContent = '' + fs.readFileSync(dtsPath);
 
     fs.writeFileSync(
-      path.resolve('dist/pixi-layers.d.ts'),
+      path.resolve('dist/pixi-compressed-textures.d.ts'),
       dtsContent.replace(/namespace pixi_compressed_textures/g, 'namespace PIXI.compressedTextures')
 		  .replace(/pixi_compressed_textures/g, 'PIXI.compressedTextures')
     );

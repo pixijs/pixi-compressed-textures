@@ -7,23 +7,15 @@
     "Ivan Popelyshev <ivan.popelyshev@gmail.com>",
     "Chad Engler <chad@pantherdev.com>"
   ],
-  "homepage": "https://github.com/pixijs/pixi-compressed-textures",
-  "bugs": {
-    "url": "https://github.com/pixijs/pixi-compressed-textures/issues"
-  },
+  "main": "./dist/pixi-compressed-textures.js",
+  "types": "./dist/pixi-compressed-textures.d.ts",
+  "homepage": "http://www.pixijs.com/",
+  "bugs": "https://github.com/pixijs/pixi-compressed-textures/issues",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/pixijs/pixi-compressed-textures.git"
   },
-  "keywords": [
-    "pixi",
-    "2d",
-    "render"
-  ],
-  "main": "./dist/pixi-compressed-textures.js",
-  "types": "./dist/pixi-compressed-textures.d.ts",
-  "homepage": "https://github.com/pixijs/pixi-spine",
   "scripts": {
     "cleanup": "rimraf dist && mkdirp dist",
     "prestart": "yarn cleanup",
@@ -34,20 +26,20 @@
     "build": "tsc && yarn make:dts"
   },
   "files": [
-    "bin/",
-    "SPINE-LICENSE",
+    "dist/",
+    "lib/",
+    "CONTRIBUTING.md",
+    "LICENSE",
     "package.json",
     "README.md"
   ],
   "devDependencies": {
-    "del": "~2.2.0",
-    "glob": "~7.1.1",
-    "mkdirp": "~0.5.1",
-    "parallelshell": "~2.0.0",
-    "pixi.js": "~5.1.2",
-    "rimraf": "~2.5.3",
+    "del": "^2.2.0",
+    "mkdirp": "^0.5.1",
+    "parallelshell": "^2.0.0",
+    "rimraf": "^2.5.3",
     "tmp": "^0.0.33",
-    "ts-helpers": "~1.1.2",
-    "typescript": "^3.5.3"
+    "typescript": "^3.5.3",
+    "pixi.js": "^5.1.2"
   }
 }

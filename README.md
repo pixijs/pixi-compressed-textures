@@ -1,5 +1,8 @@
 # pixi-textures
-Compressed textures and retina support for pixi v4. Loader can choose textures depends on platform and rendering mode.
+
+Compressed textures and retina support for pixi v5. Loader can choose textures depends on platform and rendering mode.
+
+You can use previous version with PixiJS v4 - [v4.x branch](https://github.com/pixijs/pixi-compressed-textures/tree/v4.x) npm version `1.1.8` 
 
 Supports DDS (S3TC DXT1-3-5, ATC, ATCA/ATC explicit, ATCI/ATC interpolated) and PVR (PVRTC, ETC1, S3TC DXT1-3-5, PVRTC 2-4bpp RGB-RGBA)
 
@@ -10,12 +13,17 @@ Supports advanced DXT compression [crunch](https://github.com/BinomialLLC/crunch
 Pretty easy to hack parser into your loader.
 
 ```js
-var loader = new PIXI.loaders.Loader();
-loader.before(PIXI.compressedTextures.imageParser());
+let loader = new PIXI.Loader();
 loader.add('building', 'building.dds');
 loader.load(function(loader, resources) {
-    var sprite = new PIXI.Sprite(resources['building'].texture);
+    let sprite = new PIXI.Sprite(resources['building'].texture);
 });
+```
+
+However if somehow pixi-compressed-textures was initialized after creation of loader, add a ImageParser to it:
+
+```js
+loader.use(PIXI.compressedTextures.ImageParser.use);
 ```
 
 ## Full example
@@ -26,51 +34,55 @@ This [example](http://pixijs.github.io/examples/#/textures/dds.js)
 shows how to handle multiple resolutions and multiple image formats for single images and for atlases.
 
 ```js
-var renderer = PIXI.autoDetectRenderer(800, 600, { resolution: window.devicePixelRatio || 1 });
-renderer.view.style.width = "800px";
-renderer.view.style.height = "600px";
-document.body.appendChild(renderer.view);
+const app = new PIXI.Application({ resolution: window.devicePixelRatio || 1 });
+document.body.appendChild(app.view);
 
-// this will form list of allowed extensions based on renderer.
-var extensions = PIXI.compressedTextures.detectExtensions(renderer);
+// use empty array if you dont want to use detect feature
+const extensions = PIXI.compressedTextures.detectExtensions(app.renderer);
+const loader = app.loader;
 
-var loader = new PIXI.loaders.Loader();
-// this middleware chooses appropriate file. It also has imageParser() inside
-loader.before(PIXI.compressedTextures.extensionChooser(extensions));
+loader.pre(PIXI.compressedTextures.extensionChooser(extensions));
 // use @2x texture if resolution is 2, use dds format if its windows
-var textureOptions1 = { metadata: {choice: ["@2x.png", ".dds", "@2x.dds"]} };
+const textureOptions1 = { metadata: { choice: ['@2x.png', '.dds', '@2x.dds'] } };
 // use dds format if its windows but dont care for retina
-var textureOptions2 = { metadata: {choice: [".dds"]} };
+const textureOptions2 = { metadata: { choice: ['.dds'] } };
 // while loading atlas, choose resolution for atlas and choose format for image
-var atlasOptions = { metadata: { choice: ["@2x.json", "@1x.json"], imageMetadata: { choice: [".dds"]} } };
+const atlasOptions = { metadata: { choice: ['@2x.json', '@1x.json'], imageMetadata: { choice: ['.dds'] } } };
 
-var stage = new PIXI.Container();
-
-loader.add('building1', '_assets/compressed/building1.png', textureOptions1)
-    .add('building2', '_assets/compressed/building2.png', textureOptions2)
-    .add('atlas1', '_assets/compressed/buildings.json', atlasOptions )
-    .load(function(loader, resources) {
-        var spr1 = new PIXI.Sprite(resources.building1.texture);
-        var spr2 = new PIXI.Sprite(resources.building2.texture);
-        var spr3 = new PIXI.Sprite.fromImage('goldmine_10_5.png');
-        var spr4 = new PIXI.Sprite.fromImage('wind_extractor_10.png');
-        spr1.position.y = spr3.position.y = 150;
-        spr2.position.y = spr4.position.y = 350;
-        spr1.position.x = spr2.position.x = 250;
-        spr3.position.x = spr4.position.x = 450;
-        stage.addChild(spr1);
-        stage.addChild(spr2);
-        stage.addChild(spr3);
-        stage.addChild(spr4);
+loader.add('building1', 'examples/assets/pixi-compressed-textures/building1.png', textureOptions1)
+    .add('building2', 'examples/assets/pixi-compressed-textures/building2.png', textureOptions2)
+    .add('atlas1', 'examples/assets/pixi-compressed-textures/buildings.json', atlasOptions)
+    .load((loaderInstance, resources) => {
+        const spr1 = new PIXI.Sprite(resources.building1.texture);
+        const spr2 = new PIXI.Sprite(resources.building2.texture);
+        const spr3 = PIXI.Sprite.from('goldmine_10_5.png');
+        const spr4 = PIXI.Sprite.from('wind_extractor_10.png');
+        spr1.y = spr3.y = 150;
+        spr2.y = spr4.y = 350;
+        spr1.x = spr2.x = 250;
+        spr3.x = spr4.x = 450;
+        app.stage.addChild(spr1, spr2, spr3, spr4);
     });
-
-animate();
-
-function animate() {
-    requestAnimationFrame(animate);
-    renderer.render(stage);
-}
 ```
+
+### Fixing it in cache
+
+To fix url names in cache your have to add one extra loader plugin: extensionFixer.
+ 
+It should be added after all other image-related plugins.
+
+That way in the example above, image will appear under name `examples/assets/pixi-compressed-textures/building1.png`
+and not `examples/assets/pixi-compressed-textures/building1.dds`.
+
+```js
+loader.use(PIXI.compressedTextures.ExtensionFixer.use);
+```
+
+### Using crunch
+
+To use crunch you have to manually add `lib/crn_decomp.js` to your build. 
+
+We cant help you with adding it in webpack or browserify or angular, its your job.
 
 ## Note about atlases
 
@@ -78,18 +90,16 @@ PIXI recognizes resolution of atlas by suffix (@1x, @2x, ... )
 
 If you dont specify that, resolution of the atlas will be taken from "meta.scale" which in our example is 1 and 0.5 instead of 2 and 1. It will shrink everything!
 
+### Browserify / WebPack / Angular
 
-### Browserify
-
-If you use browserify you can use pixi-textures like this:
+If you use browserify or Webpack you can use pixi-textures like this:
 
 ```js
-var PIXI = require('pixi.js'),
-    TEX = require('pixi-compressed-textures');
-
-var loader = new PIXI.loaders.Loader();
+import * as PIXI from "pixi.js';
+window.PIXI = PIXI;
+import "pixi-compressed-textures"; //or require("pixi-compressed-textures")
 // textureParser will form list of allowed extensions based on renderer.
-loader.before(PIXI.compressedTextures.extensionChooser(PIXI.compressedTextures.detectExtensions(renderer)));
+loader.pre(PIXI.compressedTextures.extensionChooser(PIXI.compressedTextures.detectExtensions(renderer)));
 ```
 
 ## Building
@@ -99,7 +109,8 @@ You will need to have [node][node]
 Then you can install dependencies and build:
 
 ```js
-npm i && npm run build
+npm i
+npm run build
 ```
 
 That will output the built distributables to `./dist`.
