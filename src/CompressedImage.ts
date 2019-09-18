@@ -103,7 +103,7 @@ namespace pixi_compressed_textures {
     const FOURCC_ATCA = fourCCToInt32("ATCA");
     const FOURCC_ATCI = fourCCToInt32("ATCI");
 
-    //============================//
+//============================//
 // DXT constants and utilites //
 //============================//
 
@@ -116,7 +116,7 @@ namespace pixi_compressed_textures {
             (value.charCodeAt(3) << 24);
     }
 
-// Turns a fourCC numeric code into a string
+    // Turns a fourCC numeric code into a string
     function int32ToFourCC(value: number) {
         return String.fromCharCode(
             value & 0xff,
@@ -126,7 +126,7 @@ namespace pixi_compressed_textures {
         );
     }
 
-// Calcualates the size of a compressed texture level in bytes
+    // Calcualates the size of a compressed texture level in bytes
     function textureLevelSize(format: number, width: number, height: number) {
         switch (format) {
             case COMPRESSED_RGB_S3TC_DXT1_EXT:
@@ -158,6 +158,8 @@ namespace pixi_compressed_textures {
     }
 
     export class CompressedImage extends PIXI.resources.Resource {
+        private _internalLoader: ASTC_Loader;
+        public flipY : boolean = false;
         constructor(src: string, data?: Uint8Array, type?: string, width?: number, height?: number, levels?: number, internalFormat?: number) {
             super();
             this.init(src, data, type, width, height, levels, internalFormat)
@@ -221,28 +223,49 @@ namespace pixi_compressed_textures {
                 throw "Trying to create a second (or more) webgl texture from the same CompressedImage : " + this.src;
             }
 
+            const levels = this.levels;
+            
             let width = this.width;
             let height = this.height;
-            const levels = this.levels;
             let offset = 0;
+            
+            // ASTC is flipped
+            // BUT compressed textures doesn't flips
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, !!this.flipY);
+
             // Loop through each mip level of compressed texture data provided and upload it to the given texture.
-            for (let i = 0; i < this.levels; ++i) {
+            for (let i = 0; i < levels; ++i) {
                 // Determine how big this level of compressed texture data is in bytes.
                 let levelSize = textureLevelSize(this.internalFormat, width, height);
+                
+                //ASTC us ref
+                if(this._internalLoader) {
+                    levelSize = this._internalLoader.levelSize(width, height);
+                }
+
                 // Get a view of the bytes for this level of DXT data.
                 let dxtLevel = new Uint8Array(this.data.buffer, this.data.byteOffset + offset, levelSize);
+
                 // Upload!
                 gl.compressedTexImage2D(gl.TEXTURE_2D, i, this.internalFormat, width, height, 0, dxtLevel);
                 // The next mip level will be half the height and width of this one.
+                
                 width = width >> 1;
-                if (width < 1)
+                if (width < 1) {
                     width = 1;
+                }
+                
                 height = height >> 1;
-                if (height < 1)
+                if (height < 1) {
                     height = 1;
+                }
                 // Advance the offset into the compressed texture data past the current mip level's data.
                 offset += levelSize;
             }
+
+            // reset for default texture
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+            
 
             if (this.crunch) {
                 CRN_Module._free(this.crunch[0]); // source
@@ -285,18 +308,24 @@ namespace pixi_compressed_textures {
         }
 
         loadFromArrayBuffer(arrayBuffer: ArrayBuffer, crnLoad?: boolean): CompressedImage {
-            const head = new Uint8Array(arrayBuffer, 0, 3);
-
+            const head = new Uint32Array(arrayBuffer, 0, 1)[0];
             //todo: implement onload
-
-            if (head[0] == "DDS".charCodeAt(0) && head[1] == "DDS".charCodeAt(1) && head[2] == "DDS".charCodeAt(2))
+            if (head === DDS_MAGIC){
                 return this._loadDDS(arrayBuffer);
-            else if (head[0] == "PVR".charCodeAt(0) && head[1] == "PVR".charCodeAt(1) && head[2] == "PVR".charCodeAt(2))
+            }
+            else if (head === PVR_MAGIC){
                 return this._loadPVR(arrayBuffer);
-            else if (crnLoad)
+            }
+            else if(ASTC_Loader.test(arrayBuffer)){
+                this._internalLoader = new ASTC_Loader(this, false);
+                return this._internalLoader.load(arrayBuffer);
+            }
+            else if (crnLoad){
                 return this._loadCRN(arrayBuffer);
-            else
+            }
+            else{
                 throw new Error("Compressed texture format is not recognized: " + this.src);
+            }
         }
 
         arrayBufferCopy(src: Uint8Array, dst: Uint8Array, dstByteOffset: number, numBytes: number): void {
