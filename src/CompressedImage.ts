@@ -153,12 +153,21 @@ namespace pixi_compressed_textures {
                 throw "Registered compressed loaders is missing. Call `TextureSystem.initCompressed` before loading!";
             }
 
+
             let selectedLoaderCtr = undefined;
             
             for(let loader of loaders) {
-                if(loader.test(arrayBuffer)) {
-                    selectedLoaderCtr = loader;
-                    break;
+                if(!crnLoad) {
+                    if(loader.test(arrayBuffer)) {
+                        selectedLoaderCtr = loader;
+                        break;
+                    }
+                } else {
+                    /// so.... 
+                    if(loader.type === "CRN"){
+                        selectedLoaderCtr = loader;
+                        break;
+                    }
                 }
             }
 
