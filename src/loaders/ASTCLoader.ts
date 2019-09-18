@@ -1,21 +1,4 @@
-
-
-const ASTC_DIMS_TO_FORMAT = {
-    [4*4] : 0,
-    [5*4] : 1,
-    [5*5] : 2,
-    [6*5] : 3,
-    [6*6] : 4,
-    [8*5] : 5,
-    [8*6] : 6,
-    [8*8] : 7,
-    [10*5] : 8,
-    [10*6] : 9,
-    [10*8] : 10,
-    [10*10] : 11,
-    [12*10] : 12,
-    [12*12] : 13
-}
+/// <reference path="./AbstractInteranlLoader.ts"/>
 
 // ASTC Formats, from
 // https://www.khronos.org/registry/webgl/extensions/WEBGL_compressed_texture_astc/
@@ -35,7 +18,7 @@ const ASTC_DIMS_TO_FORMAT = {
  */
 
 namespace pixi_compressed_textures {
-     
+
     // headers
     const ASTC_HEADER_LENGTH = 16;
     // uint 8
@@ -46,11 +29,11 @@ namespace pixi_compressed_textures {
     const ASTC_HEADER_WIDTH = 7;
     //uint 24
     const ASTC_HEADER_HEIGHT = 10;
-    
+
     const ASTC_MAGIC = 0x5CA1AB13;
 
     /* Compressed Texture Format */
-    const COMPRESSED_RGBA_ASTC_4x4_KHR  = 0x93B0;
+    const COMPRESSED_RGBA_ASTC_4x4_KHR = 0x93B0;
     const COMPRESSED_RGBA_ASTC_5x4_KHR = 0x93B1;
     const COMPRESSED_RGBA_ASTC_5x5_KHR = 0x93B2;
     const COMPRESSED_RGBA_ASTC_6x5_KHR = 0x93B3;
@@ -80,24 +63,43 @@ namespace pixi_compressed_textures {
     const COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR = 0x93DC;
     const COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR = 0x93DD;
 
-    export class ASTC_Loader {
-        private _format: number = 0;
-        private _blockSize: {x : number; y: number}= {x: 0, y: 0};
+    const ASTC_DIMS_TO_FORMAT = {
+        [4 * 4]: 0,
+        [5 * 4]: 1,
+        [5 * 5]: 2,
+        [6 * 5]: 3,
+        [6 * 6]: 4,
+        [8 * 5]: 5,
+        [8 * 6]: 6,
+        [8 * 8]: 7,
+        [10 * 5]: 8,
+        [10 * 6]: 9,
+        [10 * 8]: 10,
+        [10 * 10]: 11,
+        [12 * 10]: 12,
+        [12 * 12]: 13
+    }
+    
+    export class ASTCLoader extends AbstractInternalLoader {
+        public static type = "ASTC";
+        private _blockSize: { x: number; y: number } = { x: 0, y: 0 };
 
-        constructor(private _image: CompressedImage = new CompressedImage("unknown"), public useSRGB = false) {}
+        constructor(_image: CompressedImage, public useSRGB = false) {
+            super(_image);
+        }
 
         load(buffer: ArrayBuffer) {
-            if (!ASTC_Loader.test(buffer)) {
+            if (!ASTCLoader.test(buffer)) {
                 // Do some sanity checks to make sure this is a valid ASTC file.
                 throw "Invalid magic number in ASTC header";
             }
-            
+
             const header = new Uint8Array(buffer, 0, ASTC_HEADER_LENGTH);
             const dim_x = header[ASTC_HEADER_DIM_X];
             const dim_y = header[ASTC_HEADER_DIM_Y];
-            const width =  (header[ASTC_HEADER_WIDTH]) + (header[ASTC_HEADER_WIDTH + 1] << 8) + (header[ASTC_HEADER_WIDTH + 2] << 16);
+            const width = (header[ASTC_HEADER_WIDTH]) + (header[ASTC_HEADER_WIDTH + 1] << 8) + (header[ASTC_HEADER_WIDTH + 2] << 16);
             const height = (header[ASTC_HEADER_HEIGHT]) + (header[ASTC_HEADER_HEIGHT + 1] << 8) + (header[ASTC_HEADER_HEIGHT + 2] << 16);
-            const internalFormat = ASTC_DIMS_TO_FORMAT[dim_x * dim_y] + ( this.useSRGB ? COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR : COMPRESSED_RGBA_ASTC_4x4_KHR);
+            const internalFormat = ASTC_DIMS_TO_FORMAT[dim_x * dim_y] + (this.useSRGB ? COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR : COMPRESSED_RGBA_ASTC_4x4_KHR);
             const astcData = new Uint8Array(buffer, ASTC_HEADER_LENGTH);
 
             this._format = internalFormat;
@@ -106,21 +108,19 @@ namespace pixi_compressed_textures {
 
             const dest = this._image;
             dest.init(dest.src, astcData, 'ASTC', width, height, 1, internalFormat);
-            dest.flipY = true;
             return dest;
         }
 
-        
         static test(buffer: ArrayBuffer) {
             const magic = new Int32Array(buffer, 0, 1);
             return magic[0] === ASTC_MAGIC;
         }
-        
-        levelSize(width : number, height : number): number {
+
+        levelBufferSize(width: number, height: number, mipLevel: number = 0): number {
             const f_ = Math.floor;
             const dim_x = this._blockSize.x;
             const dim_y = this._blockSize.y;
-            
+
             return (f_((width + dim_x - 1) / dim_x) * f_((height + dim_y - 1) / dim_y)) << 4;
         }
     }

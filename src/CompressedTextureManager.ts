@@ -1,12 +1,15 @@
 declare namespace PIXI.systems {
     interface TextureSystem {
         initCompressed?(): void;
-
+        registerCompressedLoader?(loader: any): void;
         compressedExtensions?: any;
     }
 }
 
 namespace pixi_compressed_textures {
+    
+    export let Loaders : Array<any> = undefined;
+
     PIXI.systems.TextureSystem.prototype.initCompressed = function() {
         const gl = this.gl;
         if (!this.compressedExtensions) {
@@ -19,7 +22,18 @@ namespace pixi_compressed_textures {
             };
             this.compressedExtensions.crn = this.compressedExtensions.dxt;
         }
+
+        if(!pixi_compressed_textures.Loaders) {
+            pixi_compressed_textures.Loaders = [
+                DDSLoader, PVRTCLoader, ASTCLoader, CRNLoader
+            ];
+        }
     };
+    
+    PIXI.systems.TextureSystem.prototype.registerCompressedLoader = function(loader: any): void
+    {
+        pixi_compressed_textures.Loaders.push(loader)
+    }
 
     export function detectExtensions(renderer: PIXI.Renderer, resolution?: number) {
         let extensions = [];
