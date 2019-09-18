@@ -17,6 +17,8 @@ declare namespace PIXI {
 declare namespace PIXI.compressedTextures {
     function loadFromArrayBuffer(arrayBuffer: ArrayBuffer, src: string, crnLoad?: boolean): CompressedImage;
     class CompressedImage extends PIXI.resources.Resource {
+        private _internalLoader;
+        flipY: boolean;
         constructor(src: string, data?: Uint8Array, type?: string, width?: number, height?: number, levels?: number, internalFormat?: number);
         init(src: string, data: Uint8Array, type: string, width: number, height: number, levels: number, internalFormat: number, crunchCache?: Array<number>): CompressedImage;
         complete: boolean;
@@ -76,6 +78,21 @@ declare namespace PIXI {
 declare namespace PIXI.compressedTextures {
     class ImageParser {
         static use(this: PIXI.Loader, resource: PIXI.LoaderResource, next: () => any): void;
+    }
+}
+declare const ASTC_DIMS_TO_FORMAT: {
+    [x: number]: number;
+};
+declare namespace PIXI.compressedTextures {
+    class ASTC_Loader {
+        private _image;
+        useSRGB: boolean;
+        private _format;
+        private _blockSize;
+        constructor(_image?: CompressedImage, useSRGB?: boolean);
+        load(buffer: ArrayBuffer): CompressedImage;
+        static test(buffer: ArrayBuffer): boolean;
+        levelSize(width: number, height: number): number;
     }
 }
 declare namespace PIXI.compressedTextures {
