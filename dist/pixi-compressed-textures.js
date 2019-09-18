@@ -97,6 +97,7 @@ var pixi_compressed_textures;
         __extends(CompressedImage, _super);
         function CompressedImage(src, data, type, width, height, levels, internalFormat) {
             var _this = _super.call(this) || this;
+            _this.flipY = false;
             _this.complete = false;
             _this.isCompressedImage = true;
             _this.preserveSource = true;
@@ -139,22 +140,29 @@ var pixi_compressed_textures;
             if (this.data === null) {
                 throw "Trying to create a second (or more) webgl texture from the same CompressedImage : " + this.src;
             }
+            var levels = this.levels;
             var width = this.width;
             var height = this.height;
-            var levels = this.levels;
             var offset = 0;
-            for (var i = 0; i < this.levels; ++i) {
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, !!this.flipY);
+            for (var i = 0; i < levels; ++i) {
                 var levelSize = textureLevelSize(this.internalFormat, width, height);
+                if (this._internalLoader) {
+                    levelSize = this._internalLoader.levelSize(width, height);
+                }
                 var dxtLevel = new Uint8Array(this.data.buffer, this.data.byteOffset + offset, levelSize);
                 gl.compressedTexImage2D(gl.TEXTURE_2D, i, this.internalFormat, width, height, 0, dxtLevel);
                 width = width >> 1;
-                if (width < 1)
+                if (width < 1) {
                     width = 1;
+                }
                 height = height >> 1;
-                if (height < 1)
+                if (height < 1) {
                     height = 1;
+                }
                 offset += levelSize;
             }
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
             if (this.crunch) {
                 CRN_Module._free(this.crunch[0]);
                 CRN_Module._free(this.crunch[1]);
@@ -189,15 +197,23 @@ var pixi_compressed_textures;
             return true;
         };
         CompressedImage.prototype.loadFromArrayBuffer = function (arrayBuffer, crnLoad) {
-            var head = new Uint8Array(arrayBuffer, 0, 3);
-            if (head[0] == "DDS".charCodeAt(0) && head[1] == "DDS".charCodeAt(1) && head[2] == "DDS".charCodeAt(2))
+            var head = new Uint32Array(arrayBuffer, 0, 1)[0];
+            if (head === DDS_MAGIC) {
                 return this._loadDDS(arrayBuffer);
-            else if (head[0] == "PVR".charCodeAt(0) && head[1] == "PVR".charCodeAt(1) && head[2] == "PVR".charCodeAt(2))
+            }
+            else if (head === PVR_MAGIC) {
                 return this._loadPVR(arrayBuffer);
-            else if (crnLoad)
+            }
+            else if (pixi_compressed_textures.ASTC_Loader.test(arrayBuffer)) {
+                this._internalLoader = new pixi_compressed_textures.ASTC_Loader(this, false);
+                return this._internalLoader.load(arrayBuffer);
+            }
+            else if (crnLoad) {
                 return this._loadCRN(arrayBuffer);
-            else
+            }
+            else {
                 throw new Error("Compressed texture format is not recognized: " + this.src);
+            }
         };
         CompressedImage.prototype.arrayBufferCopy = function (src, dst, dstByteOffset, numBytes) {
             var dst32Offset = dstByteOffset / 4;
@@ -497,5 +513,100 @@ var pixi_compressed_textures;
 var pixi_compressed_textures;
 (function (pixi_compressed_textures) {
     PIXI.compressedTextures = pixi_compressed_textures;
+})(pixi_compressed_textures || (pixi_compressed_textures = {}));
+var _a;
+var ASTC_DIMS_TO_FORMAT = (_a = {},
+    _a[4 * 4] = 0,
+    _a[5 * 4] = 1,
+    _a[5 * 5] = 2,
+    _a[6 * 5] = 3,
+    _a[6 * 6] = 4,
+    _a[8 * 5] = 5,
+    _a[8 * 6] = 6,
+    _a[8 * 8] = 7,
+    _a[10 * 5] = 8,
+    _a[10 * 6] = 9,
+    _a[10 * 8] = 10,
+    _a[10 * 10] = 11,
+    _a[12 * 10] = 12,
+    _a[12 * 12] = 13,
+    _a);
+var pixi_compressed_textures;
+(function (pixi_compressed_textures) {
+    var ASTC_HEADER_LENGTH = 16;
+    var ASTC_HEADER_DIM_X = 4;
+    var ASTC_HEADER_DIM_Y = 5;
+    var ASTC_HEADER_WIDTH = 7;
+    var ASTC_HEADER_HEIGHT = 10;
+    var ASTC_MAGIC = 0x5CA1AB13;
+    var COMPRESSED_RGBA_ASTC_4x4_KHR = 0x93B0;
+    var COMPRESSED_RGBA_ASTC_5x4_KHR = 0x93B1;
+    var COMPRESSED_RGBA_ASTC_5x5_KHR = 0x93B2;
+    var COMPRESSED_RGBA_ASTC_6x5_KHR = 0x93B3;
+    var COMPRESSED_RGBA_ASTC_6x6_KHR = 0x93B4;
+    var COMPRESSED_RGBA_ASTC_8x5_KHR = 0x93B5;
+    var COMPRESSED_RGBA_ASTC_8x6_KHR = 0x93B6;
+    var COMPRESSED_RGBA_ASTC_8x8_KHR = 0x93B7;
+    var COMPRESSED_RGBA_ASTC_10x5_KHR = 0x93B8;
+    var COMPRESSED_RGBA_ASTC_10x6_KHR = 0x93B9;
+    var COMPRESSED_RGBA_ASTC_10x8_KHR = 0x93BA;
+    var COMPRESSED_RGBA_ASTC_10x10_KHR = 0x93BB;
+    var COMPRESSED_RGBA_ASTC_12x10_KHR = 0x93BC;
+    var COMPRESSED_RGBA_ASTC_12x12_KHR = 0x93BD;
+    var COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR = 0x93D0;
+    var COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR = 0x93D1;
+    var COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR = 0x93D2;
+    var COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR = 0x93D3;
+    var COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR = 0x93D4;
+    var COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR = 0x93D5;
+    var COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR = 0x93D6;
+    var COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR = 0x93D7;
+    var COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR = 0x93D8;
+    var COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR = 0x93D9;
+    var COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR = 0x93DA;
+    var COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR = 0x93DB;
+    var COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR = 0x93DC;
+    var COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR = 0x93DD;
+    var ASTC_Loader = (function () {
+        function ASTC_Loader(_image, useSRGB) {
+            if (_image === void 0) { _image = new pixi_compressed_textures.CompressedImage("unknown"); }
+            if (useSRGB === void 0) { useSRGB = false; }
+            this._image = _image;
+            this.useSRGB = useSRGB;
+            this._format = 0;
+            this._blockSize = { x: 0, y: 0 };
+        }
+        ASTC_Loader.prototype.load = function (buffer) {
+            if (!ASTC_Loader.test(buffer)) {
+                throw "Invalid magic number in ASTC header";
+            }
+            var header = new Uint8Array(buffer, 0, ASTC_HEADER_LENGTH);
+            var dim_x = header[ASTC_HEADER_DIM_X];
+            var dim_y = header[ASTC_HEADER_DIM_Y];
+            var width = (header[ASTC_HEADER_WIDTH]) + (header[ASTC_HEADER_WIDTH + 1] << 8) + (header[ASTC_HEADER_WIDTH + 2] << 16);
+            var height = (header[ASTC_HEADER_HEIGHT]) + (header[ASTC_HEADER_HEIGHT + 1] << 8) + (header[ASTC_HEADER_HEIGHT + 2] << 16);
+            var internalFormat = ASTC_DIMS_TO_FORMAT[dim_x * dim_y] + (this.useSRGB ? COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR : COMPRESSED_RGBA_ASTC_4x4_KHR);
+            var astcData = new Uint8Array(buffer, ASTC_HEADER_LENGTH);
+            this._format = internalFormat;
+            this._blockSize.x = dim_x;
+            this._blockSize.y = dim_y;
+            var dest = this._image;
+            dest.init(dest.src, astcData, 'ASTC', width, height, 1, internalFormat);
+            dest.flipY = true;
+            return dest;
+        };
+        ASTC_Loader.test = function (buffer) {
+            var magic = new Int32Array(buffer, 0, 1);
+            return magic[0] === ASTC_MAGIC;
+        };
+        ASTC_Loader.prototype.levelSize = function (width, height) {
+            var f_ = Math.floor;
+            var dim_x = this._blockSize.x;
+            var dim_y = this._blockSize.y;
+            return (f_((width + dim_x - 1) / dim_x) * f_((height + dim_y - 1) / dim_y)) << 4;
+        };
+        return ASTC_Loader;
+    }());
+    pixi_compressed_textures.ASTC_Loader = ASTC_Loader;
 })(pixi_compressed_textures || (pixi_compressed_textures = {}));
 //# sourceMappingURL=pixi-compressed-textures.js.map

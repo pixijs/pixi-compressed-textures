@@ -4,7 +4,7 @@ Compressed textures and retina support for pixi v5. Loader can choose textures d
 
 You can use previous version with PixiJS v4 - [v4.x branch](https://github.com/pixijs/pixi-compressed-textures/tree/v4.x) npm version `1.1.8` 
 
-Supports DDS (S3TC DXT1-3-5, ATC, ATCA/ATC explicit, ATCI/ATC interpolated) and PVR (PVRTC, ETC1, S3TC DXT1-3-5, PVRTC 2-4bpp RGB-RGBA)
+Supports DDS (S3TC DXT1-3-5, ATC, ATCA/ATC explicit, ATCI/ATC interpolated), PVR (PVRTC, ETC1, S3TC DXT1-3-5, PVRTC 2-4bpp RGB-RGBA), ASTC (all blocks size) 2D LDR preset
 
 Supports advanced DXT compression [crunch](https://github.com/BinomialLLC/crunch)
 
