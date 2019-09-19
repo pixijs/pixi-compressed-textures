@@ -32,6 +32,9 @@ namespace pixi_compressed_textures {
     
     PIXI.systems.TextureSystem.prototype.registerCompressedLoader = function(loader: any): void
     {
+        if(!pixi_compressed_textures.Loaders) {
+            this.initCompressed();
+        }
         pixi_compressed_textures.Loaders.push(loader)
     }
 
