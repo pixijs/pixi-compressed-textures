@@ -287,6 +287,9 @@ var pixi_compressed_textures;
                 k = url.lastIndexOf(".");
                 if (k >= 0) {
                     resource._baseUrl = url.substring(0, k);
+                    if (k >= 4 && url.substring(k - 3, 3) === '@1x') {
+                        resource._baseUrl = url.substring(0, k);
+                    }
                 }
                 else {
                     return next();

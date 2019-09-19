@@ -1,14 +1,14 @@
 declare namespace PIXI {
-	interface LoaderResource {
-		_defaultUrlChoice?: string;
-		_defaultUrl?: string;
-		_baseUrl?: string;
-	}
+    interface LoaderResource {
+        _defaultUrlChoice?: string;
+        _defaultUrl?: string;
+        _baseUrl?: string;
+    }
 }
 
 namespace pixi_compressed_textures {
-    export function extensionChooser(supportedExtensions : Array<string> = []) {
-        return function(this: PIXI.Loader, resource: PIXI.LoaderResource, next: () => any) {
+    export function extensionChooser(supportedExtensions: Array<string> = []) {
+        return function (this: PIXI.Loader, resource: PIXI.LoaderResource, next: () => any) {
             let ext = resource.metadata.choice;
             if (!ext) {
                 return next();
@@ -21,6 +21,9 @@ namespace pixi_compressed_textures {
                 k = url.lastIndexOf(".");
                 if (k >= 0) {
                     resource._baseUrl = url.substring(0, k);
+                    if (k >= 4 && url.substring(k - 3, 3) === '@1x') {
+                        resource._baseUrl = url.substring(0, k);
+                    }
                 } else {
                     return next();
                 }
