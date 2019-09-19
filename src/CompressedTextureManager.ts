@@ -1,3 +1,9 @@
+/// <reference path="./loaders/ASTCLoader.ts"/>
+/// <reference path="./loaders/DDSLoader.ts"/>
+/// <reference path="./loaders/PVRTCLoader.ts"/>
+/// <reference path="./loaders/CRNLoader.ts"/>
+
+
 declare namespace PIXI.systems {
     interface TextureSystem {
         initCompressed?(): void;
@@ -8,7 +14,13 @@ declare namespace PIXI.systems {
 
 namespace pixi_compressed_textures {
     
-    export let Loaders : Array<any> = undefined;
+    // default loader list
+    export let Loaders : Array<any> = [
+        DDSLoader,
+        PVRTCLoader,
+        ASTCLoader,
+        CRNLoader
+    ];
 
     PIXI.systems.TextureSystem.prototype.initCompressed = function() {
         const gl = this.gl;
@@ -21,15 +33,6 @@ namespace pixi_compressed_textures {
                 etc1: gl.getExtension("WEBGL_compressed_texture_etc1")
             };
             this.compressedExtensions.crn = this.compressedExtensions.dxt;
-        }
-
-        if(!pixi_compressed_textures.Loaders) {
-            pixi_compressed_textures.RegisterCompressedLoader(
-                DDSLoader,
-                PVRTCLoader,
-                ASTCLoader,
-                CRNLoader
-            );
         }
     };
     

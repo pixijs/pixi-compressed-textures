@@ -146,13 +146,11 @@ namespace pixi_compressed_textures {
         }
 
         loadFromArrayBuffer(arrayBuffer: ArrayBuffer, crnLoad?: boolean): CompressedImage {
-            
             const loaders = Loaders;
             
             if(!loaders || !loaders.length) {
                 throw "Registered compressed loaders is missing. Call `TextureSystem.initCompressed` before loading!";
             }
-
 
             let selectedLoaderCtr = undefined;
             
