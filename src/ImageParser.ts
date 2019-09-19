@@ -12,9 +12,9 @@ namespace pixi_compressed_textures {
 
     export function RegisterCompressedExtensions(...ext: string[]) {
         for(let e in ext) {
-            if(TEXTURE_EXTENSIONS.indexOf(e) < 0) {
-                TEXTURE_EXTENSIONS.push(e);
-                Resource.setExtensionXhrType(e, Resource.XHR_RESPONSE_TYPE.BUFFER);
+            if(TEXTURE_EXTENSIONS.indexOf(ext[e]) < 0) {
+                TEXTURE_EXTENSIONS.push(ext[e]);
+                Resource.setExtensionXhrType(ext[e], Resource.XHR_RESPONSE_TYPE.BUFFER);
             }
         }        
     }
