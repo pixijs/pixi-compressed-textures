@@ -118,9 +118,17 @@ var pixi_compressed_textures;
             var selectedLoaderCtr = undefined;
             for (var _i = 0, loaders_1 = loaders; _i < loaders_1.length; _i++) {
                 var loader = loaders_1[_i];
-                if (loader.test(arrayBuffer)) {
-                    selectedLoaderCtr = loader;
-                    break;
+                if (!crnLoad) {
+                    if (loader.test(arrayBuffer)) {
+                        selectedLoaderCtr = loader;
+                        break;
+                    }
+                }
+                else {
+                    if (loader.type === "CRN") {
+                        selectedLoaderCtr = loader;
+                        break;
+                    }
                 }
             }
             if (selectedLoaderCtr) {
@@ -157,6 +165,9 @@ var pixi_compressed_textures;
         }
     };
     PIXI.systems.TextureSystem.prototype.registerCompressedLoader = function (loader) {
+        if (!pixi_compressed_textures.Loaders) {
+            this.initCompressed();
+        }
         pixi_compressed_textures.Loaders.push(loader);
     };
     function detectExtensions(renderer, resolution) {
@@ -192,18 +203,29 @@ var pixi_compressed_textures;
 var pixi_compressed_textures;
 (function (pixi_compressed_textures) {
     var Resource = PIXI.LoaderResource;
-    Resource.setExtensionXhrType('dds', Resource.XHR_RESPONSE_TYPE.BUFFER);
-    Resource.setExtensionXhrType('crn', Resource.XHR_RESPONSE_TYPE.BUFFER);
-    Resource.setExtensionXhrType('pvr', Resource.XHR_RESPONSE_TYPE.BUFFER);
-    Resource.setExtensionXhrType('etc1', Resource.XHR_RESPONSE_TYPE.BUFFER);
-    Resource.setExtensionXhrType('astc', Resource.XHR_RESPONSE_TYPE.BUFFER);
+    pixi_compressed_textures.TEXTURE_EXTENSIONS = [];
+    function RegisterCompressedExtensions() {
+        var ext = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            ext[_i] = arguments[_i];
+        }
+        for (var e in ext) {
+            if (pixi_compressed_textures.TEXTURE_EXTENSIONS.indexOf(e) < 0) {
+                pixi_compressed_textures.TEXTURE_EXTENSIONS.push(e);
+                Resource.setExtensionXhrType(e, Resource.XHR_RESPONSE_TYPE.BUFFER);
+            }
+        }
+    }
+    pixi_compressed_textures.RegisterCompressedExtensions = RegisterCompressedExtensions;
     var ImageParser = (function () {
         function ImageParser() {
         }
         ImageParser.use = function (resource, next) {
-            if (resource.url.indexOf('.crn') < 0 && resource.url.indexOf('.dds') < 0
-                && resource.url.indexOf('.pvr') < 0 && resource.url.indexOf('.etc1') < 0
-                && resource.url.indexOf('.astc') < 0) {
+            var url = resource.url;
+            var idx = url.lastIndexOf('.');
+            var amper = url.lastIndexOf('?');
+            var ext = url.substring(idx + 1, amper > 0 ? amper : url.length);
+            if (pixi_compressed_textures.TEXTURE_EXTENSIONS.indexOf(ext) < 0) {
                 next();
                 return;
             }
@@ -216,7 +238,7 @@ var pixi_compressed_textures;
                 return;
             }
             resource.compressedImage = new pixi_compressed_textures.CompressedImage(resource.url);
-            resource.compressedImage.loadFromArrayBuffer(resource.data, resource.url.indexOf(".crn") >= 0);
+            resource.compressedImage.loadFromArrayBuffer(resource.data, ext === 'crn');
             resource.isCompressedImage = true;
             resource.texture = fromResource(resource.compressedImage, resource.url, resource.name);
             next();
@@ -241,6 +263,7 @@ var pixi_compressed_textures;
         }
         return texture;
     }
+    RegisterCompressedExtensions('dds', 'crn', 'pvr', 'etc1', 'astc');
     PIXI.Loader.registerPlugin(ImageParser);
 })(pixi_compressed_textures || (pixi_compressed_textures = {}));
 var pixi_compressed_textures;

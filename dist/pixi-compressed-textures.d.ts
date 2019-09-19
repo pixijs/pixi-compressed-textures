@@ -61,6 +61,8 @@ declare namespace PIXI {
     }
 }
 declare namespace PIXI.compressedTextures {
+    const TEXTURE_EXTENSIONS: string[];
+    function RegisterCompressedExtensions(...ext: string[]): void;
     class ImageParser {
         static use(this: PIXI.Loader, resource: PIXI.LoaderResource, next: () => any): void;
     }
