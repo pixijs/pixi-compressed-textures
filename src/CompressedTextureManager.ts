@@ -24,18 +24,23 @@ namespace pixi_compressed_textures {
         }
 
         if(!pixi_compressed_textures.Loaders) {
-            pixi_compressed_textures.Loaders = [
-                DDSLoader, PVRTCLoader, ASTCLoader, CRNLoader
-            ];
+            pixi_compressed_textures.RegisterCompressedLoader(
+                DDSLoader,
+                PVRTCLoader,
+                ASTCLoader,
+                CRNLoader
+            );
         }
     };
     
-    PIXI.systems.TextureSystem.prototype.registerCompressedLoader = function(loader: any): void
+    export function RegisterCompressedLoader (...loaders: any[]): void
     {
-        if(!pixi_compressed_textures.Loaders) {
-            this.initCompressed();
+        Loaders = Loaders || [];
+        for(let e in loaders) {
+            if(Loaders.indexOf(loaders[e]) < 0) {
+                Loaders.push(loaders[e])
+            }
         }
-        pixi_compressed_textures.Loaders.push(loader)
     }
 
     export function detectExtensions(renderer: PIXI.Renderer, resolution?: number) {

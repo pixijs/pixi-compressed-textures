@@ -10,11 +10,11 @@ namespace pixi_compressed_textures {
 
     export const TEXTURE_EXTENSIONS :  string[] = [];
 
-    export function RegisterCompressedExtensions(...ext: string[]) {
-        for(let e in ext) {
-            if(TEXTURE_EXTENSIONS.indexOf(ext[e]) < 0) {
-                TEXTURE_EXTENSIONS.push(ext[e]);
-                Resource.setExtensionXhrType(ext[e], Resource.XHR_RESPONSE_TYPE.BUFFER);
+    export function RegisterCompressedExtensions(...exts: string[]) {
+        for(let e in exts) {
+            if(TEXTURE_EXTENSIONS.indexOf(exts[e]) < 0) {
+                TEXTURE_EXTENSIONS.push(exts[e]);
+                Resource.setExtensionXhrType(exts[e], Resource.XHR_RESPONSE_TYPE.BUFFER);
             }
         }        
     }
