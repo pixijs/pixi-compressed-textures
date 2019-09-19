@@ -8,17 +8,26 @@ declare namespace PIXI {
 namespace pixi_compressed_textures {
     import Resource = PIXI.LoaderResource;
 
-    Resource.setExtensionXhrType('dds', Resource.XHR_RESPONSE_TYPE.BUFFER);
-    Resource.setExtensionXhrType('crn', Resource.XHR_RESPONSE_TYPE.BUFFER);
-    Resource.setExtensionXhrType('pvr', Resource.XHR_RESPONSE_TYPE.BUFFER);
-    Resource.setExtensionXhrType('etc1', Resource.XHR_RESPONSE_TYPE.BUFFER);
-    Resource.setExtensionXhrType('astc', Resource.XHR_RESPONSE_TYPE.BUFFER);
+    export const TEXTURE_EXTENSIONS :  string[] = [];
+
+    export function RegisterCompressedExtensions(...exts: string[]) {
+        for(let e in exts) {
+            if(TEXTURE_EXTENSIONS.indexOf(exts[e]) < 0) {
+                TEXTURE_EXTENSIONS.push(exts[e]);
+                Resource.setExtensionXhrType(exts[e], Resource.XHR_RESPONSE_TYPE.BUFFER);
+            }
+        }        
+    }
 
     export class ImageParser {
         static use(this: PIXI.Loader, resource: PIXI.LoaderResource, next: () => any) {
-            if (resource.url.indexOf('.crn') < 0 && resource.url.indexOf('.dds') < 0
-                && resource.url.indexOf('.pvr') < 0 && resource.url.indexOf('.etc1') < 0
-                && resource.url.indexOf('.astc') < 0) {
+            
+            const url = resource.url;
+            const idx = url.lastIndexOf('.');
+            const amper = url.lastIndexOf('?');
+            const ext = url.substring(idx + 1, amper > 0 ? amper : url.length );
+
+            if (TEXTURE_EXTENSIONS.indexOf(ext) < 0) {
                 next();
                 return;
             }
@@ -33,7 +42,7 @@ namespace pixi_compressed_textures {
                 return;
             }
             resource.compressedImage = new CompressedImage(resource.url);
-            resource.compressedImage.loadFromArrayBuffer(resource.data, resource.url.indexOf(".crn") >= 0);
+            resource.compressedImage.loadFromArrayBuffer(resource.data, ext === 'crn');
             resource.isCompressedImage = true;
             resource.texture = fromResource(resource.compressedImage, resource.url, resource.name);
             next();
@@ -67,6 +76,7 @@ namespace pixi_compressed_textures {
 
         return texture;
     }
-
+    
+    RegisterCompressedExtensions('dds','crn','pvr','etc1','astc');
     PIXI.Loader.registerPlugin(ImageParser);
 }
