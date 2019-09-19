@@ -37,6 +37,7 @@ declare namespace PIXI.systems {
 }
 declare namespace PIXI.compressedTextures {
     let Loaders: Array<any>;
+    function RegisterCompressedLoader(...loaders: any[]): void;
     function detectExtensions(renderer: PIXI.Renderer, resolution?: number): any[];
 }
 declare namespace PIXI {
@@ -62,7 +63,7 @@ declare namespace PIXI {
 }
 declare namespace PIXI.compressedTextures {
     const TEXTURE_EXTENSIONS: string[];
-    function RegisterCompressedExtensions(...ext: string[]): void;
+    function RegisterCompressedExtensions(...exts: string[]): void;
     class ImageParser {
         static use(this: PIXI.Loader, resource: PIXI.LoaderResource, next: () => any): void;
     }

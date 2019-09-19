@@ -159,17 +159,22 @@ var pixi_compressed_textures;
             this.compressedExtensions.crn = this.compressedExtensions.dxt;
         }
         if (!pixi_compressed_textures.Loaders) {
-            pixi_compressed_textures.Loaders = [
-                pixi_compressed_textures.DDSLoader, pixi_compressed_textures.PVRTCLoader, pixi_compressed_textures.ASTCLoader, pixi_compressed_textures.CRNLoader
-            ];
+            pixi_compressed_textures.RegisterCompressedLoader(pixi_compressed_textures.DDSLoader, pixi_compressed_textures.PVRTCLoader, pixi_compressed_textures.ASTCLoader, pixi_compressed_textures.CRNLoader);
         }
     };
-    PIXI.systems.TextureSystem.prototype.registerCompressedLoader = function (loader) {
-        if (!pixi_compressed_textures.Loaders) {
-            this.initCompressed();
+    function RegisterCompressedLoader() {
+        var loaders = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            loaders[_i] = arguments[_i];
         }
-        pixi_compressed_textures.Loaders.push(loader);
-    };
+        pixi_compressed_textures.Loaders = pixi_compressed_textures.Loaders || [];
+        for (var e in loaders) {
+            if (pixi_compressed_textures.Loaders.indexOf(loaders[e]) < 0) {
+                pixi_compressed_textures.Loaders.push(loaders[e]);
+            }
+        }
+    }
+    pixi_compressed_textures.RegisterCompressedLoader = RegisterCompressedLoader;
     function detectExtensions(renderer, resolution) {
         var extensions = [];
         if (renderer instanceof PIXI.Renderer) {
@@ -205,14 +210,14 @@ var pixi_compressed_textures;
     var Resource = PIXI.LoaderResource;
     pixi_compressed_textures.TEXTURE_EXTENSIONS = [];
     function RegisterCompressedExtensions() {
-        var ext = [];
+        var exts = [];
         for (var _i = 0; _i < arguments.length; _i++) {
-            ext[_i] = arguments[_i];
+            exts[_i] = arguments[_i];
         }
-        for (var e in ext) {
-            if (pixi_compressed_textures.TEXTURE_EXTENSIONS.indexOf(e) < 0) {
-                pixi_compressed_textures.TEXTURE_EXTENSIONS.push(e);
-                Resource.setExtensionXhrType(e, Resource.XHR_RESPONSE_TYPE.BUFFER);
+        for (var e in exts) {
+            if (pixi_compressed_textures.TEXTURE_EXTENSIONS.indexOf(exts[e]) < 0) {
+                pixi_compressed_textures.TEXTURE_EXTENSIONS.push(exts[e]);
+                Resource.setExtensionXhrType(exts[e], Resource.XHR_RESPONSE_TYPE.BUFFER);
             }
         }
     }
