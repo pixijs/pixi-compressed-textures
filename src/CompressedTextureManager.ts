@@ -25,21 +25,12 @@ namespace pixi_compressed_textures {
         if (!this.compressedExtensions) {
             this.compressedExtensions = {
                 dxt: gl.getExtension("WEBGL_compressed_texture_s3tc"),
-                pvrtc: gl.getExtension("WEBGL_compressed_texture_pvrtc"),
+                pvrtc: (gl.getExtension("WEBGL_compressed_texture_pvrtc") || gl.getExtension("WEBKIT_WEBGL_compressed_texture_pvrtc")), // 09-21-2019 -- IOS require it
                 astc: gl.getExtension("WEBGL_compressed_texture_astc"),
                 atc: gl.getExtension("WEBGL_compressed_texture_atc"),
                 etc1: gl.getExtension("WEBGL_compressed_texture_etc1")
             };
             this.compressedExtensions.crn = this.compressedExtensions.dxt;
-        }
-
-        if(!pixi_compressed_textures.Loaders) {
-            pixi_compressed_textures.RegisterCompressedLoader(
-                DDSLoader,
-                PVRTCLoader,
-                ASTCLoader,
-                CRNLoader
-            );
         }
     };
     
