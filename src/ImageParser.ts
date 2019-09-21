@@ -21,7 +21,7 @@ namespace pixi_compressed_textures {
 
     export class ImageParser {
         static use(this: PIXI.Loader, resource: PIXI.LoaderResource, next: () => any) {
-            
+
             const url = resource.url;
             const idx = url.lastIndexOf('.');
             const amper = url.lastIndexOf('?');
@@ -77,6 +77,6 @@ namespace pixi_compressed_textures {
         return texture;
     }
     
-    RegisterCompressedExtensions('dds','crn','pvr','etc1','astc');
+    RegisterCompressedExtensions('dds','crn','pvr','etc1','astc', 'basis');
     PIXI.Loader.registerPlugin(ImageParser);
 }
