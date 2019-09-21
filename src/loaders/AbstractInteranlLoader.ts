@@ -11,7 +11,10 @@ namespace pixi_compressed_textures {
         
         protected _format: number = 0;
         
-        constructor(protected _image: CompressedImage = new CompressedImage("unknown")) {}
+        constructor(protected _image: CompressedImage = new CompressedImage("unknown")) {
+            //@ts-ignore
+            _image._internalLoader = this;
+        }
         
         /**
          * Calculate buffer size form specific width/height and mip level
