@@ -22,6 +22,8 @@ declare module CRN_Module {
 
 namespace pixi_compressed_textures {
     
+    const CRN_Module = (window as any).CRN_Module;
+
     function arrayBufferCopy(src: Uint8Array, dst: Uint8Array, dstByteOffset: number, numBytes: number): void {
         const dst32Offset = dstByteOffset / 4;
         const tail = (numBytes % 4);
