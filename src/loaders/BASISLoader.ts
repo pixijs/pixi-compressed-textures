@@ -121,8 +121,8 @@ namespace pixi_compressed_textures {
             let lastestAlpha = undefined;
 
             // SELECT SUPPORT
-            for (let v in ext) {
-                const native = ext[v];
+            for (let v in plain) {
+                const native = plain[v];
                 if (FMT_TO_BASIS[native] !== undefined) {
                     let basis = FMT_TO_BASIS[native] as number;
                     if (BASIS_HAS_ALPHA[basis]) {
