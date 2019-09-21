@@ -86,6 +86,61 @@ To use crunch you have to manually add `lib/crn_decomp.js` to your build.
 
 We cant help you with adding it in webpack or browserify or angular, its your job.
 
+### Using BASIS
+
+Basis format disabled by default and require transcoder.
+Transcoder may be got from: https://github.com/BinomialLLC/basis_universal/tree/master/webgl/transcoder
+
+This lib can't include transcoder because transcoder use wasm and is heavy (greater then 300kb) at the moment.
+
+For using BASIS, you can bind transcoder to load, it register `.basis` to loader automatically.
+
+#### Simple way:
+
+```js
+
+BASIS().then(Module => {
+
+    const { BasisFile, initializeBasis } = Module;
+    
+    // run module
+    initializeBasis();
+    
+    // init for getting `compressedExtensions`
+    app.renderer.texture.initCompressed();
+
+    // get supported extensions
+    const supp = app.renderer.texture.compressedExtensions;
+    
+    // bind transcoder to loader with specific extensions
+    PIXI.compressedTextures.BASISLoader.bindTranscoder(BasisFile, supp);
+});
+
+```
+
+#### Worker:
+
+Because BASIS is synchronous then it transcode a RGB texture of 1024x1024 pixels  ~30ms in main thread.
+Using it in Worker is the rightest way.
+
+BASISLoader is fully asynchronous and `Basis File` may be a Proxy-class to your worker and must implement interface:
+```ts
+declare class BasisFile {
+    constructor(buffer : Uint8Array);
+    async getNumImages(): number;
+    async getNumLevels(): number;
+    async getImageWidth(imageId: number, level:number): number;
+    async getImageHeight(imageId: number, level:number): number;
+    async getHasAlpha(): boolean;
+    async startTranscoding(): boolean;
+    async getImageTranscodedSizeInBytes(imageId : number, level: number, basisFormat: number): number;
+    async transcodeImage(dstBuff: Uint8Array, imageId: number, level: number, basisFormat: number, pvrtcWrapAddressing: boolean, getAlphaForOpaqueFormats: boolean): number
+}
+```
+
+This interface was gotten from standard `BasisFile` implementation: https://github.com/BinomialLLC/basis_universal/blob/master/webgl/transcoder/basis_wrappers.cpp#L228 
+
+
 ## Note about atlases
 
 PIXI recognizes resolution of atlas by suffix (@1x, @2x, ... )

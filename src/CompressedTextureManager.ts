@@ -1,6 +1,7 @@
 /// <reference path="./loaders/ASTCLoader.ts"/>
 /// <reference path="./loaders/DDSLoader.ts"/>
 /// <reference path="./loaders/PVRTCLoader.ts"/>
+/// <reference path="./loaders/BASISLoader.ts"/>
 /// <reference path="./loaders/CRNLoader.ts"/>
 
 declare namespace PIXI.systems {

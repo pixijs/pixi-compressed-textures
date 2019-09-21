@@ -21,7 +21,7 @@ namespace pixi_compressed_textures {
 
     export class ImageParser {
         static use(this: PIXI.Loader, resource: PIXI.LoaderResource, next: () => any) {
-            
+
             const url = resource.url;
             const idx = url.lastIndexOf('.');
             const amper = url.lastIndexOf('?');
