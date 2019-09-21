@@ -142,7 +142,7 @@ namespace pixi_compressed_textures {
             BASISLoader.BASIS_BINDING = fileCtr;
 
             console.log(
-                    `[BASISLoader] Transcoder binded. Supported formats:`,
+                    `[BASISLoader] Supported formats:`,
                     `\nRGB:${BASISLoader.RGB_FORMAT.name}\nRGBA:${BASISLoader.RGBA_FORMAT.name}`
             );
 
@@ -153,7 +153,7 @@ namespace pixi_compressed_textures {
 
         load(buffer : ArrayBuffer) {            
             if(!BASISLoader.test(buffer)) {
-                throw "BASIS Transcoder not binded or trunscoding not supported =(!";
+                throw "BASIS Transcoder not binded or transcoding not supported =(!";
             }
 
             this._loadAsync(buffer);
@@ -161,8 +161,6 @@ namespace pixi_compressed_textures {
         }
 
         async _loadAsync(buffer : ArrayBuffer) {
-            console.log('try decode BASIS');
-
             const BasisFileCtr = BASISLoader.BASIS_BINDING as any;
             const basisFile = new BasisFileCtr(new Uint8Array(buffer)) as BasisFile;
             const width = await basisFile.getImageWidth(0, 0);
@@ -178,7 +176,7 @@ namespace pixi_compressed_textures {
 
             const target = hasAlpha ? BASISLoader.RGBA_FORMAT : BASISLoader.RGB_FORMAT;
 
-            console.log("Grats! Can be transcoded to:", target);
+            console.log("Grats! BASIS will be transcoded to:", target);
 
             const dst = new Uint8Array( await basisFile.getImageTranscodedSizeInBytes(0, 0, target.basis));
             const startTime = performance.now();
