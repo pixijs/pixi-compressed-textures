@@ -160,7 +160,8 @@ namespace pixi_compressed_textures {
             return this._image;
         }
 
-        async _loadAsync(buffer : ArrayBuffer) {
+        async _loadAsync(buffer : ArrayBuffer) {            
+            const startTime = performance.now();
             const BasisFileCtr = BASISLoader.BASIS_BINDING as any;
             const basisFile = new BasisFileCtr(new Uint8Array(buffer)) as BasisFile;
             const width = await basisFile.getImageWidth(0, 0);
@@ -179,13 +180,12 @@ namespace pixi_compressed_textures {
             console.log("Grats! BASIS will be transcoded to:", target);
 
             const dst = new Uint8Array( await basisFile.getImageTranscodedSizeInBytes(0, 0, target.basis));
-            const startTime = performance.now();
-
+          
             if (! await basisFile.transcodeImage(dst, 0, 0, target.basis, !!0, !!0)) {
                 throw "Transcoding error!";
             }
 
-            console.log("[BASISLoader] Transcode time:", performance.now() - startTime);
+            console.log("[BASISLoader] Totla transcoding time:", performance.now() - startTime);
            
             this._format = target.native;
             this._file = basisFile;
