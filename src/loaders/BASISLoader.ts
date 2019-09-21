@@ -71,7 +71,7 @@ namespace pixi_compressed_textures {
     }, {} as {[key: number]: number});
 
     export class BASISLoader extends AbstractInternalLoader {        
-        static BASIS_BINDING: BasisFile = undefined;
+        static BASIS_BINDING: typeof BasisFile = undefined;
         static RGB_FORMAT: {basis: number, name: string, native: number};
         static RGBA_FORMAT: {basis: number, name: string, native: number};
 
@@ -139,6 +139,7 @@ namespace pixi_compressed_textures {
 
             BASISLoader.RGB_FORMAT = latestOp || lastestAlpha;
             BASISLoader.RGBA_FORMAT = lastestAlpha || latestOp;
+            BASISLoader.BASIS_BINDING = fileCtr;
 
             console.log(
                     `[BASISLoader] Transcoder binded. Supported formats:`,
