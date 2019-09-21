@@ -84,7 +84,7 @@ namespace pixi_compressed_textures {
         }
 
         static test(array: ArrayBuffer) {
-            const header = new Uint32Array(array)[0];      
+            const header = new Uint32Array(array, 0, 1)[0];      
             const decoder = !!BASISLoader.BASIS_BINDING;
             const isValid = header === 0x134273 && decoder;
             const isSupported = BASISLoader.RGB_FORMAT && BASISLoader.RGBA_FORMAT;
