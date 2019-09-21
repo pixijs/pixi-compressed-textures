@@ -1,6 +1,6 @@
 {
   "name": "pixi-compressed-textures",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Advanced features for pixijs textures: compression, better loader",
   "author": "Ivan Popelyshev",
   "contributors": [

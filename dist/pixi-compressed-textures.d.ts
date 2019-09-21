@@ -91,6 +91,40 @@ declare namespace PIXI.compressedTextures {
         levelBufferSize(width: number, height: number, mipLevel?: number): number;
     }
 }
+declare class BasisFile {
+    constructor(buffer: Uint8Array);
+    getNumImages(): number;
+    getNumLevels(): number;
+    getImageWidth(imageId: number, level: number): number;
+    getImageHeight(imageId: number, level: number): number;
+    getHasAlpha(): boolean;
+    startTranscoding(): boolean;
+    getImageTranscodedSizeInBytes(imageId: number, level: number, basisFormat: number): number;
+    transcodeImage(dstBuff: Uint8Array, imageId: number, level: number, basisFormat: number, pvrtcWrapAddressing: boolean, getAlphaForOpaqueFormats: boolean): number;
+}
+declare namespace PIXI.compressedTextures {
+    class BASISLoader extends AbstractInternalLoader {
+        static BASIS_BINDING: typeof BasisFile;
+        static RGB_FORMAT: {
+            basis: number;
+            name: string;
+            native: number;
+        };
+        static RGBA_FORMAT: {
+            basis: number;
+            name: string;
+            native: number;
+        };
+        type: string;
+        private _file;
+        constructor(_image: CompressedImage);
+        static test(array: ArrayBuffer): boolean;
+        static bindTranscoder(fileCtr: typeof BasisFile, ext: any): void;
+        load(buffer: ArrayBuffer): CompressedImage;
+        _loadAsync(buffer: ArrayBuffer): Promise<CompressedImage>;
+        levelBufferSize(width: number, height: number, level: number): number;
+    }
+}
 declare module CRN_Module {
     function _free(src: number): void;
     let HEAPU8: Uint8Array;
