@@ -18,7 +18,6 @@ namespace pixi_compressed_textures {
         DDSLoader,
         PVRTCLoader,
         ASTCLoader,
-        BASISLoader,
         CRNLoader
     ];
 

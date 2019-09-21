@@ -144,6 +144,10 @@ namespace pixi_compressed_textures {
                     `[BASISLoader] Transcoder binded. Supported formats:`,
                     `\nRGB:${BASISLoader.RGB_FORMAT.name}\nRGBA:${BASISLoader.RGBA_FORMAT.name}`
             );
+
+            //Register self after bunding
+            RegisterCompressedLoader(BASISLoader);
+            RegisterCompressedExtensions('basis');
         }
 
         load(buffer : ArrayBuffer) {            

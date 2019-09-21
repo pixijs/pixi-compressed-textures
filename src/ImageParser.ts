@@ -77,6 +77,6 @@ namespace pixi_compressed_textures {
         return texture;
     }
     
-    RegisterCompressedExtensions('dds','crn','pvr','etc1','astc', 'basis');
+    RegisterCompressedExtensions('dds','crn','pvr','etc1','astc');
     PIXI.Loader.registerPlugin(ImageParser);
 }
