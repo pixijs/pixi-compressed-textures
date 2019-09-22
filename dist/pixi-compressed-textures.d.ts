@@ -38,7 +38,8 @@ declare namespace PIXI.systems {
 declare namespace PIXI.compressedTextures {
     let Loaders: Array<any>;
     function RegisterCompressedLoader(...loaders: any[]): void;
-    function detectExtensions(renderer: PIXI.Renderer, resolution?: number): any[];
+    let defaultDetectedExtensions: string[];
+    function detectExtensions(renderer: PIXI.Renderer, resolution?: number, defaultResolution?: number): any[];
 }
 declare namespace PIXI {
     interface LoaderResource {
