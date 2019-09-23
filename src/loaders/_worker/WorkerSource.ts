@@ -7,9 +7,8 @@ namespace pixi_compressed_textures.WorkedBASIS {
 		function init (message : any) {
 			const bin = message.wasmBinary as ArrayBuffer;
 			__init (bin).then(()=>{
-				self.postMessage({
-					type : "init", status : true, buffer : bin
-				}, "*", [bin]); // return back for next workers
+				//@ts-ignore
+				self.postMessage({ type : "init", status : true, buffer : bin }, [bin]); // return back for next workers
 			});
 		}
 
@@ -20,11 +19,13 @@ namespace pixi_compressed_textures.WorkedBASIS {
 				Object.assign(res, {
 					type : 'transcode',
 				});
-				self.postMessage( res, "*", [res.buffer.buffer] );
+				//@ts-ignore
+				self.postMessage( res, [res.buffer.buffer] );
 
 			} catch ( error ) {
 				console.error( error );
-				self.postMessage( { type: 'error', id: message.id, error: error.message },  "*" );
+				//@ts-ignore
+				self.postMessage( { type: 'error', id: message.id, error: error.message });
 			}
 		}
 
