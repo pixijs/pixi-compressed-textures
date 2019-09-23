@@ -9,7 +9,7 @@ namespace pixi_compressed_textures {
             super(_image);
         }
 
-        async _loadAsync(buffer: ArrayBuffer) {
+        _loadAsync(buffer: ArrayBuffer) {
             const start = performance.now();
             const pool: WorkedBASIS.TranscoderWorkerPool = BASISLoader.BASIS_BINDING as any;
 
