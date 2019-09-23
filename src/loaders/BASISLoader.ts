@@ -160,18 +160,18 @@ namespace pixi_compressed_textures {
             return this._image;
         }
 
-        async _loadAsync(buffer : ArrayBuffer) {            
+        _loadAsync(buffer : ArrayBuffer) {            
             const startTime = performance.now();
             const BasisFileCtr = BASISLoader.BASIS_BINDING as any;
             const basisFile = new BasisFileCtr(new Uint8Array(buffer)) as BasisFile;
-            const width = await basisFile.getImageWidth(0, 0);
-            const height = await basisFile.getImageHeight(0, 0);
+            const width = basisFile.getImageWidth(0, 0);
+            const height = basisFile.getImageHeight(0, 0);
             // const images = await basisFile.getNumImages(); // not support yet
             const levels = 1;//await basisFile.getNumLevels( 0 ); // not support yet
-            const hasAlpha = await basisFile.getHasAlpha();
+            const hasAlpha = basisFile.getHasAlpha();
             const dest = this._image;
 
-            if (! await basisFile.startTranscoding()) {
+            if (!basisFile.startTranscoding()) {
                 throw "Transcoding error!";
             }
 
@@ -179,9 +179,9 @@ namespace pixi_compressed_textures {
 
             console.log("Grats! BASIS will be transcoded to:", target);
 
-            const dst = new Uint8Array( await basisFile.getImageTranscodedSizeInBytes(0, 0, target.basis));
+            const dst = new Uint8Array(basisFile.getImageTranscodedSizeInBytes(0, 0, target.basis));
           
-            if (! await basisFile.transcodeImage(dst, 0, 0, target.basis, !!0, !!0)) {
+            if (!basisFile.transcodeImage(dst, 0, 0, target.basis, !!0, !!0)) {
                 throw "Transcoding error!";
             }
 
@@ -192,7 +192,7 @@ namespace pixi_compressed_textures {
 
             let name = target.name.replace("COMPRESSED_", "");
 
-            return dest.init(dest.src, dst, 'BASIS|' + name, width, height, levels, target.native);
+            return Promise.resolve(dest.init(dest.src, dst, 'BASIS|' + name, width, height, levels, target.native));
         }
 
         levelBufferSize(width : number, height: number, level: number): number {
