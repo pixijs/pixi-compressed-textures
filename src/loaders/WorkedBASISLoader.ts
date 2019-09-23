@@ -51,7 +51,7 @@ namespace pixi_compressed_textures {
         }
 
         static runTranscoder(options: {jsSource: string, wasmSource: ArrayBuffer, threads: number, ext: any}) {
-            const trans = new WorkedBASIS.TranscoderWorkerPool(options.threads);
+            const trans = new WorkedBASIS.TranscoderWorkerPool(options.threads || 2);
             
             super.bindTranscoder(trans as any, options.ext);
 
