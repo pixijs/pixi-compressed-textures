@@ -123,23 +123,47 @@ BASIS().then(Module => {
 Because BASIS is synchronous then it transcode a RGB texture of 1024x1024 pixels  ~30ms in main thread.
 Using it in Worker is the rightest way.
 
-BASISLoader is fully asynchronous and `Basis File` may be a Proxy-class to your worker and must implement interface:
-```ts
-declare class BasisFile {
-    constructor(buffer : Uint8Array);
-    async getNumImages(): number;
-    async getNumLevels(): number;
-    async getImageWidth(imageId: number, level:number): number;
-    async getImageHeight(imageId: number, level:number): number;
-    async getHasAlpha(): boolean;
-    async startTranscoding(): boolean;
-    async getImageTranscodedSizeInBytes(imageId : number, level: number, basisFormat: number): number;
-    async transcodeImage(dstBuff: Uint8Array, imageId: number, level: number, basisFormat: number, pvrtcWrapAddressing: boolean, getAlphaForOpaqueFormats: boolean): number
-}
+`WorkedBASISLoader` use workers for transcoding.
+There are few API for it:
+    
+```js
+WorkedBASISLoader.loadAndRunTranscoder(options: 
+    {
+        path: string, // path to worker source `basis_transcoder.js` and `basis_transcoder.wasm`
+        ext: any, //extensions from `app.renderer.texture.compressedExtensions`
+        threads: number //workers count
+    }) : Promise<void>
 ```
+    
+```js
+WorkedBASISLoader.runTranscoder(options: 
+    {
+        jsSource: string, // text of jsFile
+        wasmSource: ArrayBuffer, // buffer of wasm file
+        threads: number,
+        ext: any
+    }): Promise<void>`
+```
+_Note: wasmSource is transferred to workers for faster initialisation._
 
-This interface was gotten from standard `BasisFile` implementation: https://github.com/BinomialLLC/basis_universal/blob/master/webgl/transcoder/basis_wrappers.cpp#L228 
+You must call 1 or 2 before loading of `.basis` files .
 
+Ex:
+```js
+
+app.renderer.texture.initCompressed();
+
+// get supported extensions
+const ext = app.renderer.texture.compressedExtensions;
+const WBL = PIXI.compressedTextures.WorkedBASISLoader;
+const pathToTranscoder = "/path/to/trancoder";
+
+WBL.loadAndRunTranscoder({path : pathToTranscoder, ext: ext, threads : 2})
+.then(() => {
+    // BASIS transcoder is loaded, you can start loading .basis files
+});
+
+```
 
 ## Note about atlases
 
