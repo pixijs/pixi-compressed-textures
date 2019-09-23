@@ -123,7 +123,7 @@ BASIS().then(Module => {
 Because BASIS is synchronous then it transcode a RGB texture of 1024x1024 pixels  ~30ms in main thread.
 Using it in Worker is the rightest way.
 
-`WorkedBASISLoader` use workers for transcoding.
+`WorkedBASISLoader` uses workers for transcoding.
 There are few API for it:
     
 ```js
