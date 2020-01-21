@@ -62,7 +62,7 @@ namespace pixi_compressed_textures {
         }
 
         load(arrayBuffer: ArrayBuffer) {
-            if (!DDSLoader.test(arrayBuffer)) {
+            if (!PVRTCLoader.test(arrayBuffer)) {
                 // Do some sanity checks to make sure this is a valid ASTC file.
                 throw "Invalid magic number in PVR header";
             }
