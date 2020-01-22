@@ -69,6 +69,68 @@ declare namespace PIXI.compressedTextures {
         static use(this: PIXI.Loader, resource: PIXI.LoaderResource, next: () => any): void;
     }
 }
+interface IBasicResult {
+    type?: 'error' | 'init' | 'transcode';
+}
+interface IInitResult extends IBasicResult {
+    buffer?: ArrayBuffer;
+}
+interface IErrorResult extends IBasicResult {
+    type: 'error';
+    error: string;
+}
+interface ITranscodeOptions {
+    rgbaFormat: number;
+    rgbFormat: number;
+    genMip?: boolean;
+    transfer?: boolean;
+}
+interface IMipmap {
+    width: number;
+    height: number;
+    format: number;
+    size: number;
+}
+interface ITranscodeResult extends IInitResult {
+    type: 'transcode';
+    hasAlpha: boolean;
+    width: number;
+    height: number;
+    mipmaps: Array<IMipmap>;
+}
+declare namespace PIXI.compressedTextures.WorkedBASIS {
+    class BasisWorker {
+        static ID: number;
+        worker: Worker;
+        id: number;
+        free: boolean;
+        initDone: boolean;
+        binary: ArrayBuffer;
+        private _rej;
+        private _res;
+        init(basisSource?: string, basisBinary?: ArrayBuffer): any;
+        transcode(buffer: ArrayBuffer, options: ITranscodeOptions): any;
+        _init(bin: ArrayBuffer): void;
+        _onMessage(event: {
+            data: IBasicResult;
+        }): void;
+        _onError(reason: string): void;
+        destroy(): void;
+    }
+    class TranscoderWorkerPool {
+        workers: Array<BasisWorker>;
+        private count;
+        constructor(count?: number);
+        init(jsSource: string, wasmSource: ArrayBuffer): any;
+        transcode(buffer: ArrayBuffer, options: ITranscodeOptions): any;
+        destroy(): void;
+    }
+}
+declare var BASIS: any;
+declare namespace PIXI.compressedTextures.WorkedBASIS {
+    const basisWorkerSource: () => void;
+    function generateWorker(basisJSSource: string): Worker;
+}
 declare namespace PIXI.compressedTextures {
     abstract class AbstractInternalLoader {
         protected _image: CompressedImage;
@@ -122,7 +184,7 @@ declare namespace PIXI.compressedTextures {
         static test(array: ArrayBuffer): boolean;
         static bindTranscoder(fileCtr: typeof BasisFile, ext: any): void;
         load(buffer: ArrayBuffer): CompressedImage;
-        _loadAsync(buffer: ArrayBuffer): Promise<CompressedImage>;
+        _loadAsync(buffer: ArrayBuffer): any;
         levelBufferSize(width: number, height: number, level: number): number;
     }
 }
@@ -166,6 +228,25 @@ declare namespace PIXI.compressedTextures {
         load(arrayBuffer: ArrayBuffer): CompressedImage;
         static test(buffer: ArrayBuffer): boolean;
         levelBufferSize(width: number, height: number, mipLevel?: number): number;
+    }
+}
+declare namespace PIXI.compressedTextures {
+    class WorkedBASISLoader extends BASISLoader {
+        private _mips;
+        constructor(_image: CompressedImage);
+        _loadAsync(buffer: ArrayBuffer): any;
+        static loadAndRunTranscoder(options: {
+            path: string;
+            ext: any;
+            threads: number;
+        }): any;
+        static runTranscoder(options: {
+            jsSource: string;
+            wasmSource: ArrayBuffer;
+            threads: number;
+            ext: any;
+        }): any;
+        levelBufferSize(width: number, height: number, mip: number): number;
     }
 }
 declare namespace PIXI.compressedTextures {
