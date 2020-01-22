@@ -61,7 +61,15 @@ namespace pixi_compressed_textures {
         }
 
         bind(baseTexture: PIXI.BaseTexture) {
-            baseTexture.premultiplyAlpha = false;
+            if (baseTexture.alphaMode !== undefined)
+            {
+                // 5.2.0
+                baseTexture.alphaMode = PIXI.ALPHA_MODES.NO_PREMULTIPLIED_ALPHA;
+            } else
+            {
+                // 5.1.2
+                (baseTexture as any).premultiplyAlpha = false;
+            }
             super.bind(baseTexture);
         }
 
@@ -80,6 +88,9 @@ namespace pixi_compressed_textures {
             let width = this.width;
             let height = this.height;
             let offset = 0;
+
+            //TODO: support cubemap resources, target is not TEXTURE_2D for them
+            //TODO: support anisotropic levels
 
             // Loop through each mip level of compressed texture data provided and upload it to the given texture.
             for (let i = 0; i < levels; ++i) {
@@ -121,11 +132,10 @@ namespace pixi_compressed_textures {
             // We can't use gl.generateMipmaps with compressed textures, so only use
             // mipmapped filtering if the compressed texture data contained mip levels.
 
-            //TODO: add mipmap flag here?
             const gl = renderer.state.gl;
             const levels = this.levels;
             if (baseTexture.scaleMode === PIXI.SCALE_MODES.LINEAR) {
-                if (levels > 1) {
+                if (levels > 1 && glTexture.mipmap) {
                     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
                     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
                 } else {
@@ -133,14 +143,16 @@ namespace pixi_compressed_textures {
                     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
                 }
             } else {
-                if (levels > 1) {
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                if (levels > 1 && glTexture.mipmap) {
                     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
                 } else {
                     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
                     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
                 }
             }
+
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, glTexture.wrapMode);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, glTexture.wrapMode);
 
             return true;
         }
