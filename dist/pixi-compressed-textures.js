@@ -52,7 +52,12 @@ var pixi_compressed_textures;
             this.data = null;
         };
         CompressedImage.prototype.bind = function (baseTexture) {
-            baseTexture.premultiplyAlpha = false;
+            if (baseTexture.alphaMode !== undefined) {
+                baseTexture.alphaMode = PIXI.ALPHA_MODES.NO_PREMULTIPLIED_ALPHA;
+            }
+            else {
+                baseTexture.premultiplyAlpha = false;
+            }
             _super.prototype.bind.call(this, baseTexture);
         };
         CompressedImage.prototype.upload = function (renderer, baseTexture, glTexture) {
@@ -89,7 +94,7 @@ var pixi_compressed_textures;
             var gl = renderer.state.gl;
             var levels = this.levels;
             if (baseTexture.scaleMode === PIXI.SCALE_MODES.LINEAR) {
-                if (levels > 1) {
+                if (levels > 1 && glTexture.mipmap) {
                     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
                     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
                 }
@@ -99,8 +104,7 @@ var pixi_compressed_textures;
                 }
             }
             else {
-                if (levels > 1) {
-                    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+                if (levels > 1 && glTexture.mipmap) {
                     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
                 }
                 else {
@@ -108,6 +112,8 @@ var pixi_compressed_textures;
                     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
                 }
             }
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, glTexture.wrapMode);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, glTexture.wrapMode);
             return true;
         };
         CompressedImage.prototype.loadFromArrayBuffer = function (arrayBuffer, crnLoad) {
