@@ -1,4 +1,4 @@
-# pixi-textures
+# pixi-compressed-textures
 
 Compressed textures and retina support for pixi v5. Loader can choose textures depends on platform and rendering mode.
 
